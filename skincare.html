@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>العناية بالبشرة – ميركاتو | تسوق بذكاء، عش أفضل</title>
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-KPJ7ZG4R');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts for Cairo -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Custom Styles for Mercato Theme and Layout -->
+  <style>
+    /* New Luxury Color Palette (Permanent Night Mode): */
+    /* Primary Dark: #1A2C42 (Deep Navy / Dark Blue) */
+    /* Accent Gold: #D4AF37 (Gold / Bronze) */
+    /* Light Background (used as text color now): #F8F8F8 (Very Light Gray / Cream) */
+    /* Secondary Accent: #5A7D9D (Pale Blue / Teal) */
+    /* Background Darkest: #0F1A2A */
+    /* Header Background Darker: #0B141F */
+    /* Card Background Dark: #1F2E40 */
+    /* Skeleton Loader Dark: #2C3E50, #34495E */
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #0F1A2A; /* Fixed dark background */
+      color: #F8F8F8; /* Light primary text color */
+      line-height: 1.6;
+      text-align: right;
+      font-size: 0.625rem; /* ~78% of 0.8rem, effectively scaling down other elements */
+
+      /* Make body the flex container for fixed header/footer and scrollable content */
+      display: flex;
+      flex-direction: column;
+      height: 100vh; /* Full viewport height */
+      overflow: hidden; /* Prevent body scroll, let inner content scroll */
+    }
+
+    /* Tailwind font sizes - to keep text sizes appropriate */
+    .text-xs { font-size: 0.7rem; }
+    .text-sm { font-size: 0.8rem; }
+    .text-base { font-size: 0.9rem; }
+    .text-lg { font-size: 1.05rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-5xl { font-size: 2.5rem; }
+    .text-6xl { font-size: 3rem; }
+    .text-7xl { font-size: 3.75rem; }
+
+
+    /* Initial loading screen styles */
+    #initial-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0F1A2A;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: #F8F8F8;
+    }
+    .loading-spinner {
+        border: 3.6px solid #2C3E50;
+        border-top: 3.6px solid #D4AF37;
+        border-radius: 50%;
+        width: 22.5px;
+        height: 22.5px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 6.75px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+
+    /* General containers to prevent horizontal scrollbar */
+    .container {
+      max-width: 576px; /* To maintain phone width */
+      margin: 0 auto;
+      padding: 0 0.8rem;
+    }
+
+    /* Header specific styles */
+    .header-bg {
+      background: #0B141F;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.5);
+      /* Make header sticky */
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* Gold-accented buttons */
+    .btn-primary {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      font-weight: 800;
+      padding: 0.4rem 1.3rem;
+      border-radius: 9999px;
+      box-shadow: 0 2.5px 6.5px rgba(212, 175, 55, 0.4);
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-primary:hover {
+      background-color: #C29B27;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(212, 175, 55, 0.6);
+    }
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid #D4AF37;
+      color: #D4AF37;
+      font-weight: 700;
+      padding: 0.35rem 1.2rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-secondary:hover {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      transform: translateY(-0.7px);
+      box-shadow: 0 1.5px 4.5px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Card styles (products, categories) */
+    .card-shadow {
+      background-color: #1F2E40; /* Dark background for boxes */
+      box-shadow: 0 3px 9px rgba(0, 0, 0, 0.3), 0 1.2px 3.6px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      font-size: 0.625rem; /* Ensure card content scales with base font-size */
+    }
+    .card-shadow .text-[#1A2C42] {
+        color: #F8F8F8; /* Ensures dark text inside cards becomes light */
+    }
+    .card-shadow:hover {
+      transform: translateY(-2.5px);
+      box-shadow: 0 5.5px 14px rgba(0, 0, 0, 0.4), 0 2.5px 6.5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Animations */
+    .animate-fade-in-up {
+      animation: fadeInUp 0.9s ease-out forwards;
+      opacity: 0;
+    }
+    .animation-delay-200 { animation-delay: 0.2s; }
+    .animation-delay-400 { animation-delay: 0.4s; }
+    .animation-delay-600 { animation-delay: 0.6s; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0px); }
+    }
+
+    /* Skeleton Loader Styles */
+    .skeleton-card {
+        background: #2C3E50;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: pulse 1.8s infinite ease-in-out;
+    }
+    .skeleton-card-image {
+        width: 100%;
+        height: 180px; /* Increased height for skeleton */
+        background: #34495E;
+    }
+    .skeleton-card-info {
+        padding: 6.5px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .skeleton-text {
+        height: 0.4rem;
+        background: #34495E;
+        border-radius: 2px;
+        margin-bottom: 3px;
+    }
+    .skeleton-text.short { width: 60%; }
+    .skeleton-text.medium { width: 85%; }
+    .skeleton-button {
+        height: 14px;
+        background: #34495E;
+        border-radius: 0.3rem;
+        margin-top: auto;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+
+    /* Error/No products section styles */
+    .text-red-700 { color: #FCA5A5; }
+    .text-gray-700 { color: #D1D5DB; }
+    .bg-red-50 { background-color: rgba(127, 29, 29, 0.2); }
+    .border-red-300 { border-color: #B91C1C; }
+    .bg-gray-50 { background-color: rgba(31, 41, 55, 0.5); }
+    .border-gray-300 { border-color: #4B5563; }
+    .text-gray-500 { color: #9CA3AF; }
+    .text-gray-400 { color: #9CA3AF; }
+
+    /* ProductCard specific styles */
+    .product-card {
+      background-color: #1F2E40; /* Dark background for boxes */
+      color: #F8F8F8; /* Light text */
+      border-radius: 0.9rem; /* 1.5rem * 0.6 = 0.9rem */
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 2.4px 7.2px rgba(0, 0, 0, 0.2); /* 10*0.6 = 6; 30*0.6=18 -> 15; 4*0.6=2.4; 12*0.6=7.2 */
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid #2C3E50; /* Light dark border */
+    }
+    .product-card:hover {
+      transform: translateY(-5px); /* 8px * 0.6 = 4.8px -> 5px */
+      box-shadow: 0 10.8px 27px rgba(0, 0, 0, 0.4), 0 4.8px 12px rgba(0, 0, 0, 0.3); /* 18*0.6=10.8; 45*0.6=27; 8*0.6=4.8; 20*0.6=12 */
+    }
+    .product-card .product-image {
+        height: 180px; /* Consistent height for better look */
+    }
+    .product-card .badge {
+        top: 9px; /* 5 * 0.6 = 3; rounded-full */
+        right: 9px; /* 5 * 0.6 = 3; rounded-full */
+        font-size: 0.7rem; /* 0.7rem */
+        padding: 2.4px 7.2px; /* 4*0.6=2.4; 1.5*0.6=0.9 -> px-2.5 py-1 */
+        border-radius: 9999px;
+        box-shadow: 0 3.6px 9px rgba(0, 0, 0, 0.2); /* 6*0.6=3.6; 15*0.6=9 */
+    }
+    .product-card .product-name {
+        font-size: 0.9rem; /* 2xl -> base -> 0.9rem */
+        margin-bottom: 5.4px; /* 3*0.6=1.8 -> mb-1.5 */
+    }
+    .product-card .product-price {
+        font-size: 1.05rem; /* 3xl -> lg -> 1.05rem */
+        margin-bottom: 9px; /* 5*0.6=3 -> mb-2 */
+    }
+    .product-card .product-price span {
+        font-size: 0.8rem; /* xl -> sm -> 0.8rem */
+    }
+    .product-card .btn-primary {
+        padding: 0.3rem 1rem; /* 0.8*0.6 = 0.48 -> 0.3; 2.5*0.6 = 1.5 -> 1rem */
+        font-size: 0.7rem; /* 0.7rem */
+    }
+
+    /* Scroll to Top Button Styles */
+    .scroll-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #D4AF37;
+      color: #1A2C42;
+      border-radius: 50%;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .scroll-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .scroll-to-top:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    .scroll-to-top svg {
+      width: 17px; /* 28*0.6=16.8 -> 17px */
+      height: 17px; /* 28*0.6=16.8 -> 17px */
+      stroke-width: 2.5;
+    }
+
+    /* Custom Modal Styles (replaces alert/confirm) */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .custom-modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .custom-modal-content {
+      background-color: #1F2E40;
+      color: #F8F8F8;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      max-width: 270px;
+      width: 90%;
+      text-align: center;
+      transform: translateY(-12px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .custom-modal-overlay.show .custom-modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .custom-modal-content .p-4 {
+        padding: 10px;
+        border-radius: 6px;
+    }
+    .custom-modal-content .text-2xl {
+        font-size: 1.25rem;
+    }
+    .custom-modal-content .text-lg {
+        font-size: 0.9rem;
+    }
+    .custom-modal-content .bg-green-600 { background-color: #38A169; }
+    .custom-modal-content .text-white { color: white; }
+    .custom-modal-content .border-green-400 { border-color: #68D391; }
+    .custom-modal-content .bg-red-600 { background-color: #C53030; }
+    .custom-modal-content .text-red-700 { color: #FEE2E2; }
+    .custom-modal-content .border-red-400 { border-color: #F6AD55; }
+    .custom-modal-content .bg-[#D4AF37] { background-color: #D4AF37; color: #1A2C42; }
+    .custom-modal-content .hover:bg-[#C29B27]:hover { background-color: #C29B27; }
+  </style>
+</head>
+<body class="font-cairo antialiased">
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPJ7ZG4R"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <div id="root" class="flex flex-col min-h-screen">
+    <!-- Initial Loading Screen (hidden when app is loaded) -->
+    <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="loading-spinner"></div>
+        <p class="text-xl text-gray-300 mt-2">جاري التحقق من تسجيل الدخول...</p>
+    </div>
+  </div>
+
+  <!-- React core libraries -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Firebase SDKs - Re-importing here to ensure global window objects are set before React components use them -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, serverTimestamp, addDoc, updateDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuttEadee0V2YOZHmG53a2Rck7AvFCFEM",
+      authDomain: "mercato-2cf1d.firebaseapp.com",
+      projectId: "mercato-2cf1d",
+      storageBucket: "mercato-2cf1d.firebasestorage.app",
+      messagingSenderId: "896887505927",
+      appId: "1:896887505927:web:6cb474409bdcfdb1e216a2",
+      measurementId: "G-4WNGK0W077"
+    };
+
+    window.mercatoAppId = firebaseConfig.projectId; 
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseApp = app;
+    window.firebaseAuth = auth;
+    window.firebaseFirestore = {
+      dbInstance: db,
+      getFirestore: getFirestore,
+      collection: collection,
+      query: query,
+      where: where,
+      getDocs: getDocs,
+      doc: doc,
+      getDoc: getDoc,
+      serverTimestamp: serverTimestamp,
+      addDoc: addDoc,
+      updateDoc: updateDoc,
+      onSnapshot: onSnapshot, 
+      setDoc: setDoc 
+    };
+    window.firebaseAuthInstance = auth; 
+
+    async function initializeAuthForCanvas() {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+          console.log("Firebase: Signed in with custom token.");
+        } else {
+          await signInAnonymously(auth);
+          console.log("Firebase: Signed in anonymously.");
+        }
+      } catch (error) {
+        console.error("Firebase Auth Error during initialization:", error);
+      }
+    }
+    initializeAuthForCanvas();
+
+    onAuthStateChanged(auth, async (user) => { 
+      const initialLoadingScreen = document.getElementById('initial-loading');
+      if (initialLoadingScreen) {
+        initialLoadingScreen.style.display = 'none';
+      }
+
+      if (!user) {
+        console.log("Firebase Auth State Changed. No user logged in. Redirecting to login.html...");
+        window.location.href = 'login.html';
+      } else {
+        console.log("Firebase Auth State Changed. User UID:", user.uid);
+        if (window.renderApp) {
+          window.renderApp(user); 
+        } else {
+          console.error("Window.renderApp is not defined. React app might not be loaded yet.");
+        }
+      }
+    });
+
+    window.handleSignOut = async () => {
+      try {
+        await signOut(window.firebaseAuthInstance);
+        console.log("skin-care: User signed out. Redirecting to login.html...");
+        window.location.href = 'login.html';
+      } catch (error) {
+        console.error("skin-care: Sign Out Error: ", error);
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]';
+        modal.innerHTML = `
+          <div class="bg-white p-2 rounded-sm shadow-md text-center max-w-[150px]">
+            <h3 class="text-sm font-bold text-red-600 mb-2">خطأ في تسجيل الخروج</h3>
+            <p class="text-xs text-gray-700">${error.message || "حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى."}</p>
+            <button class="mt-2 bg-[#1A2C42] text-white px-2 py-1 text-xs rounded-sm hover:bg-gray-800 transition-colors" onclick="this.parentNode.parentNode.remove()">حسناً</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+    };
+  </script>
+
+  <!-- React App Script (type="text/babel") -->
+  <script type="text/babel">
+    const useState = React.useState;
+    const useEffect = React.useEffect;
+    const useCallback = React.useCallback;
+
+    // Custom Modal Component for displaying messages
+    const CustomModal = ({ title, message, type, onClose }) => {
+      const isSuccess = type === 'success';
+      const bgColorClass = isSuccess ? 'bg-green-600' : 'bg-red-600';
+      const textColorClass = 'text-white';
+      const borderColorClass = isSuccess ? 'border-green-400' : 'border-red-400';
+
+      const [showModal, setShowModal] = useState(false);
+
+      useEffect(() => {
+        const timer = setTimeout(() => setShowModal(true), 50); 
+        return () => clearTimeout(timer);
+      }, []);
+
+      const handleClose = () => {
+        setShowModal(false);
+        setTimeout(onClose, 300); 
+      };
+
+      return (
+        <div className={`custom-modal-overlay ${showModal ? 'show' : ''}`}>
+          <div className={`custom-modal-content ${showModal ? 'show' : ''}`}>
+            <div className={`p-4 rounded-lg border ${bgColorClass} ${textColorClass} mb-3`}>
+              <h3 className="text-xl font-bold mb-2">{title}</h3>
+              <p className="text-sm">{message}</p>
+            </div>
+            <button
+              onClick={handleClose}
+              className="bg-[#D4AF37] text-[#1A2C42] font-bold py-2 px-6 rounded-full hover:bg-[#C29B27] transition-colors duration-300 shadow-sm text-sm"
+            >
+              حسناً
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // Global function to render the React app after authentication
+    window.renderApp = (user) => {
+      const initialLoadingScreen = document.getElementById('initial-loading');
+      if (initialLoadingScreen) {
+        initialLoadingScreen.style.display = 'none';
+      }
+      ReactDOM.render(<App currentUser={user} />, document.getElementById('root'));
+    };
+
+    // --- Header Component ---
+    const Header = ({ currentUser, pageTitle }) => {
+        const [cartItemCount, setCartItemCount] = useState(0);
+
+        useEffect(() => {
+            let unsubscribeCart = () => {};
+            if (currentUser && currentUser.uid && window.firebaseFirestore && window.firebaseFirestore.onSnapshot) {
+                const dbInstance = window.firebaseFirestore.getFirestore();
+                const userCartCollectionRef = window.firebaseFirestore.collection(
+                    dbInstance,
+                    'artifacts',
+                    window.mercatoAppId, 
+                    'users',
+                    currentUser.uid,
+                    'cartItems'
+                );
+                console.log("Header: Listening to cart changes at:", userCartCollectionRef.path);
+
+                unsubscribeCart = window.firebaseFirestore.onSnapshot(userCartCollectionRef, (snapshot) => {
+                    let totalCount = 0;
+                    snapshot.forEach(doc => {
+                        const itemData = doc.data();
+                        totalCount += itemData.quantity || 0;
+                    });
+                    setCartItemCount(totalCount);
+                    console.log("Header: Cart items updated. Total:", totalCount);
+                }, (error) => {
+                    console.error("Header: Error fetching cart items:", error);
+                });
+            } else {
+                setCartItemCount(0);
+                console.log("Header: Not listening to cart (no user or Firebase not ready).");
+            }
+
+            return () => unsubscribeCart();
+        }, [currentUser]);
+
+      const handleGoBack = () => {
+        history.back();
+      };
+
+      return (
+        <header className="header-bg text-white p-1.5 shadow-sm rounded-b-md z-50">
+          <div className="container mx-auto flex flex-wrap items-center justify-between py-1">
+            <div className="flex items-center space-x-1.5 space-x-reverse">
+              {/* Updated logo source as per user request */}
+              <img
+                src="https://i.postimg.cc/kGPQ7cK1/Screenshot-Canva.jpg"
+                alt="ميركاتو"
+                className="w-auto h-8 object-contain rounded-sm shadow-xs border border-[#D4AF37]"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://placehold.co/32x16/1A2C42/D4AF37?text=ميركاتو';
+                }}
+              />
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-extrabold text-white leading-tight">
+                  ميركاتو
+                </h1>
+                <p className="text-xs text-[#D4AF37] mt-0.25 font-light tracking-wide">
+                  أفضل العروض، بأقل جهد!
+                </p>
+              </div>
+            </div>
+
+            <nav className="flex items-center space-x-2 space-x-reverse text-xs font-semibold flex-grow justify-center">
+              <a href="index.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                الرئيسية
+              </a>
+              <a href="all-categories.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                أقسامنا
+              </a>
+              <a href="daily-deals.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                عروض اليوم
+              </a>
+              <a href="faq.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                الأسئلة الشائعة
+              </a>
+              <a href="contact.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                اتصل بنا
+              </a>
+            </nav>
+
+            <div className="flex items-center space-x-1.5 space-x-reverse">
+              {currentUser && currentUser.uid ? (
+                <>
+                  <a href="cart.html"
+                    className="relative p-1.5 rounded-full bg-[#5A7D9D] hover:bg-[#D4AF37] hover:text-[#1A2C42] transition-colors flex items-center justify-center text-white focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                    aria-label="السلة"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L23 4H5.2"/>
+                    </svg>
+                    {cartItemCount > 0 && (
+                        <span className="absolute -top-1 -left-1 bg-red-600 text-white text-[0.6rem] rounded-full px-1.5 py-0.5 font-bold leading-none">
+                            {cartItemCount}
+                        </span>
+                    )}
+                  </a>
+
+                  <a href="profile.html" className="flex items-center text-white font-bold py-1 px-2 rounded-full bg-[#5A7D9D] hover:bg-[#D4AF37] hover:text-[#1A2C42] transition-colors duration-300 shadow-xs text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-circle mr-0.5">
+                      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                    </svg>
+                    الملف الشخصي
+                  </a>
+
+                  <button
+                    onClick={handleGoBack}
+                    className="p-1.5 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors flex items-center justify-center text-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+                    aria-label="الرجوع"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right-from-line transform rotate-180"><path d="M3 5V19"/><path d="M17 12H3"/><path d="m14 5 3 7-3 7"/></svg>
+                  </button>
+                </>
+              ) : (
+                <div className="flex space-x-1.5 space-x-reverse">
+                  <a href="login.html" className="btn-secondary">
+                    تسجيل الدخول
+                  </a>
+                  <a href="signup.html" className="btn-primary">
+                    إنشاء حساب
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+      );
+    };
+
+    // --- Product Card Component ---
+    const ProductCard = ({ product, onAddToCart }) => {
+      const { id, name, displayPrice, img, link } = product;
+
+      return (
+        <article className="product-card rounded-lg shadow-md overflow-hidden flex flex-col group">
+          <div className="relative overflow-hidden w-full product-image">
+            <img
+              src={img}
+              alt={name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://placehold.co/120x180/1F2E40/F8F8F8?text=صورة+غير+موجودة'; // Adjusted dimensions for placeholder
+              }}
+            />
+            {Math.random() > 0.7 && (
+              <span className="absolute badge bg-[#D4AF37] text-[#1A2C42] font-bold px-2 py-1 rounded-full shadow-xs">
+                عرض خاص!
+              </span>
+            )}
+          </div>
+          <div className="p-2.5 flex flex-col flex-grow">
+            <h3 className="product-name font-bold text-white mb-1 leading-tight">{name}</h3>
+            {/* Removed "ر.س" from price display as per user request */}
+            <p className="product-price font-extrabold text-[#D4AF37] mb-1.5">
+              السعر: {displayPrice} 
+            </p>
+            <div className="flex flex-col space-y-1.5 mt-auto">
+                <button
+                    onClick={() => onAddToCart(product)}
+                    className="btn-primary text-center w-full"
+                >
+                    أضف إلى السلة
+                </button>
+                <a
+                    href={link}
+                    className="btn-secondary text-center w-full text-xs py-1.5"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    اشتري {/* Changed from "شاهد المنتج الأصلي" to "اشتري" */}
+                </a>
+            </div>
+          </div>
+        </article>
+      );
+    };
+
+    // --- Skeleton Card Component ---
+    const SkeletonCard = () => (
+      <div className="skeleton-card">
+        <div className="skeleton-card-image"></div>
+        <div className="skeleton-card-info">
+          <div className="skeleton-text medium"></div>
+          <div className="skeleton-text short"></div>
+          <div className="skeleton-button"></div>
+        </div>
+      </div>
+    );
+
+    // --- Product Display Grid Component ---
+    const ProductDisplayGrid = ({ categoryCode, userCountry, searchTerm = '', sortBy = 'none', sortOrder = 'asc', onAddToCart }) => { 
+      const [products, setProducts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+
+      useEffect(() => {
+        const fetchProducts = async () => {
+          setLoading(true);
+          setError(null);
+          
+          console.log("ProductDisplayGrid: Starting product fetch for category:", categoryCode, "and country:", userCountry);
+          console.log("ProductDisplayGrid: Using App ID:", window.mercatoAppId); 
+
+          if (!window.firebaseFirestore || !window.firebaseFirestore.getFirestore) {
+              setError("خطأ: Firebase Firestore غير مهيأ بشكل صحيح.");
+              setLoading(false);
+              console.error("ProductDisplayGrid: Firebase Firestore is not initialized.");
+              return;
+          }
+
+          const dbInstance = window.firebaseFirestore.getFirestore();
+          let productsRef = window.firebaseFirestore.collection(dbInstance, 'artifacts', window.mercatoAppId, 'public', 'data', 'products');
+          let productsQuery = productsRef;
+          
+          console.log("ProductDisplayGrid: Base products collection path:", productsRef.path);
+
+          productsQuery = window.firebaseFirestore.query(productsQuery, window.firebaseFirestore.where('category', '==', categoryCode));
+          console.log("ProductDisplayGrid: Applied category filter: category == ", categoryCode);
+          
+          if (userCountry && userCountry !== 'اختر الدولة' && userCountry !== 'لم يتم الاختيار' && userCountry !== '') {
+            productsQuery = window.firebaseFirestore.query(productsQuery, window.firebaseFirestore.where('availableCountries', 'array-contains', userCountry));
+            console.log("ProductDisplayGrid: Applied country filter: availableCountries array-contains ", userCountry);
+          } else {
+             setError('الرجاء اختيار دولتك لعرض المنتجات المناسبة.');
+             setLoading(false);
+             setProducts([]);
+             console.log("ProductDisplayGrid: User country not selected or invalid. Skipping country filter and showing error.");
+             return; 
+          }
+
+          try {
+            console.log("ProductDisplayGrid: Attempting to get documents with query...");
+            const querySnapshot = await window.firebaseFirestore.getDocs(productsQuery);
+            let fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log("ProductDisplayGrid: Fetched", fetchedProducts.length, "products before client-side filters/sorting.");
+
+            if (searchTerm) {
+              fetchedProducts = fetchedProducts.filter(product =>
+                product.name.toLowerCase().includes(searchTerm.toLowerCase())
+              );
+              console.log("ProductDisplayGrid: Products after search filter:", fetchedProducts.length);
+            }
+
+            const sortedProducts = [...fetchedProducts].sort((a, b) => {
+                const priceA = parseFloat(String(a.displayPrice || '0').replace(/[^\d.]/g, '')) || 0;
+                const priceB = parseFloat(String(b.displayPrice || '0').replace(/[^\d.]/g, '')) || 0;
+
+                if (sortBy === 'price') {
+                    return sortOrder === 'asc' ? priceA - priceB : priceB - priceA;
+                } else if (sortBy === 'name') {
+                    return sortOrder === 'asc' ? String(a.name).localeCompare(String(b.name), 'ar') : String(b.name).localeCompare(String(a.name), 'ar');
+                }
+                return 0;
+            });
+
+            setProducts(sortedProducts);
+            if (sortedProducts.length === 0) {
+                 setError('لا توجد منتجات حاليًا في هذا القسم أو لهذه الدولة!');
+            }
+          } catch (err) {
+            console.error('ProductDisplayGrid: Error fetching products from Firestore:', err);
+            setError('تعذر تحميل المنتجات حاليًا. يرجى المحاولة مرة أخرى لاحقًا.');
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        if (userCountry) {
+            fetchProducts();
+        } else {
+            setLoading(false);
+            setError('الرجاء اختيار دولتك لعرض المنتجات المناسبة.');
+            setProducts([]);
+            console.log("ProductDisplayGrid: userCountry is null/empty. Not fetching products.");
+        }
+      }, [categoryCode, userCountry, searchTerm, sortBy, sortOrder]);
+
+
+      if (loading) {
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        );
+      }
+
+      if (error && products.length === 0) { 
+        return (
+          <div className="text-center p-3.5 bg-red-50 border border-red-300 text-red-700 rounded-md shadow-sm my-3.5 mx-auto max-w-xs">
+            <p className="text-base font-bold mb-1.5">عفواً، حدث خطأ!</p>
+            <p className="text-xs">{error}</p>
+            <p className="mt-1.5 text-gray-400">
+              يرجى التأكد من اتصالك بالإنترنت أو تحديث الصفحة.
+            </p>
+          </div>
+        );
+      }
+      
+      if (products.length === 0) { 
+        return (
+          <div className="text-center p-3.5 bg-gray-50 border border-gray-300 text-gray-700 rounded-md shadow-sm my-3.5 mx-auto max-w-xs flex flex-col items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-package-x-mark text-gray-500 mb-1.5"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v6a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 14z"/><path d="m3 7 9 5 9-5"/><path d="m3 14 9 5 9-5"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+            <p className="text-base font-bold mb-1.5">لا توجد منتجات حاليًا في هذا القسم أو لهذه الدولة!</p>
+            <p className="text-xs leading-relaxed">
+              يرجى العودة لاحقًا لمشاهدة أحدث المنتجات والعروض.
+            </p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+          {products.map((product, index) => (
+            <ProductCard key={product.id || index} product={product} onAddToCart={onAddToCart} />
+          ))}
+        </div>
+      );
+    };
+
+    // --- Scroll to Top Button Component ---
+    const ScrollToTopButton = () => {
+      const [isVisible, setIsVisible] = useState(false);
+
+      const toggleVisibility = () => {
+        // Check scroll position of the main scrollable container, not window
+        const mainContent = document.querySelector('.main-scroll-content');
+        if (mainContent && mainContent.scrollTop > 300) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      };
+
+      const scrollToTop = () => {
+        const mainContent = document.querySelector('.main-scroll-content');
+        if (mainContent) {
+          mainContent.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+      };
+
+      useEffect(() => {
+        const mainContent = document.querySelector('.main-scroll-content');
+        if (mainContent) {
+          mainContent.addEventListener('scroll', toggleVisibility);
+          return () => mainContent.removeEventListener('scroll', toggleVisibility);
+        }
+      }, []);
+
+      return (
+        <button
+          onClick={scrollToTop}
+          className={`scroll-to-top ${isVisible ? 'show' : ''}`}
+          aria-label="العودة للأعلى"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+        </button>
+      );
+    };
+
+    // --- Footer Component ---
+    const Footer = () => {
+      return (
+        <footer className="bg-[#0B141F] text-white py-6 px-1.5 mt-10 rounded-t-md shadow-inner-dark z-30">
+          <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-2.5 text-center md:text-right">
+            {/* Removed "تواصل معنا" section as per user request */}
+
+            {/* Removed "روابط سريعة" section as per user request */}
+
+            <div className="animate-fade-in-up animation-delay-400 col-span-full md:col-span-1 md:col-start-3"> {/* Adjusted column span for centering */}
+              <h3 className="text-base font-bold mb-1.5 text-[#D4AF37]">تابعنا</h3>
+              <div className="flex justify-center md:justify-end space-x-2.5 space-x-reverse">
+                {/* Replaced social media logos with text as per user request */}
+                <a
+                  href="https://www.tiktok.com/@mercato.0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                >
+                  TIKTOK 
+                </a>
+                <a
+                  href="https://www.instagram.com/mercato.0?igsh=MWRvangxbHdqcXA0bQ=="
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                >
+                  instagram
+                </a>
+                <a
+                  href="https://t.me/mercato00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                >
+                  Telegram
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-600 mt-3.5 pt-3.5 text-center text-gray-500 text-xs">
+            <p>&copy; 2025 ميركاتو. جميع الحقوق محفوظة.</p>
+            <p className="mt-1">مصمم بحب لتقديم أفضل تجربة تسوق.</p>
+          </div>
+        </footer>
+      );
+    };
+
+    // --- Main App Component for Skin Care Page ---
+    const App = ({ currentUser }) => {
+      const [currentSearchTerm, setCurrentSearchTerm] = useState('');
+      const [sortBy, setSortBy] = useState('none');
+      const [sortOrder, setSortOrder] = useState('asc');
+      const [modalInfo, setModalInfo] = useState(null); // State for CustomModal
+      
+      // State for user country, initialized from localStorage or default 'SA'
+      const [userCountry, setUserCountry] = useState(() => localStorage.getItem('mercato_selected_country') || 'SA');
+
+      // Listen for real-time updates to user profile document for country
+      useEffect(() => {
+        let unsubscribeProfile = () => {};
+        if (currentUser && currentUser.uid && window.firebaseFirestore) {
+          const dbInstance = window.firebaseFirestore.getFirestore();
+          const userProfileDocRef = window.firebaseFirestore.doc(
+            dbInstance,
+            'artifacts',
+            window.mercatoAppId,
+            'users',
+            currentUser.uid,
+            'userProfiles',
+            'profile'
+          );
+
+          console.log("App: Setting up onSnapshot for user profile at:", userProfileDocRef.path);
+          unsubscribeProfile = window.firebaseFirestore.onSnapshot(userProfileDocRef, async (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              const fetchedCountry = data.country || 'SA'; 
+              if (fetchedCountry !== userCountry) {
+                console.log("App: User country changed in Firestore via onSnapshot:", fetchedCountry);
+                setUserCountry(fetchedCountry);
+                localStorage.setItem('mercato_selected_country', fetchedCountry);
+              }
+            } else {
+              // Profile doesn't exist, create it with default country
+              console.log("App: User profile does not exist. Creating with default country: SA");
+              const defaultCountry = 'SA';
+              await window.firebaseFirestore.setDoc(userProfileDocRef, {
+                email: currentUser.email || 'anonymous@mercato.com', 
+                createdAt: window.firebaseFirestore.serverTimestamp(),
+                country: defaultCountry,
+                name: ''
+              }, { merge: true });
+              setUserCountry(defaultCountry);
+              localStorage.setItem('mercato_selected_country', defaultCountry);
+            }
+          }, (error) => {
+            console.error("App: Error listening to user profile:", error);
+            showModal('خطأ في مزامنة الدولة', 'تعذر تحديث معلومات دولتك تلقائيًا.', true);
+          });
+        }
+
+        return () => unsubscribeProfile();
+      }, [currentUser, showModal, userCountry]);
+
+      // Mapping country codes to full names for display - UPDATED LIST
+      const countryNames = {
+          'KW': 'الكويت',
+          'QA': 'قطر',
+          'AE': 'الإمارات',
+          'BH': 'البحرين',
+          'SA': 'المملكة العربية السعودية',
+          'EG': 'مصر',
+          'JO': 'الأردن',
+          'IQ': 'العراق',
+          'OM': 'عمان', 
+          'SY': 'سوريا', 
+          'LB': 'لبنان'
+      };
+      const displayedCountryName = countryNames[userCountry] || 'غير محدد';
+      console.log("App: Rendering with effectiveUserCountryCode:", userCountry, "and displayed as:", displayedCountryName);
+
+      // Function to display a custom modal (replaces alert/confirm)
+      const showModal = useCallback((title, message, isError = false) => {
+        setModalInfo({ title, message, type: isError ? 'error' : 'success', onClose: () => setModalInfo(null) });
+      }, []); 
+
+      const handleSearch = (term) => {
+        setCurrentSearchTerm(term);
+      };
+
+      const handleSortChange = (e) => {
+        const value = e.target.value;
+        if (value === 'price_asc') {
+          setSortBy('price');
+          setSortOrder('asc');
+        } else if (value === 'price_desc') {
+          setSortBy('price');
+          setSortOrder('desc');
+        } else if (value === 'name_asc') {
+          setSortBy('name');
+          setSortOrder('asc');
+        } else if (value === 'name_desc') {
+          setSortBy('name');
+          setSortOrder('desc');
+        } else {
+          setSortBy('none');
+          setSortOrder('asc');
+        }
+      };
+
+      // Function to handle country change from the select input
+      const handleCountryChange = async (e) => {
+        const newCountryCode = e.target.value;
+        if (!currentUser || !currentUser.uid) {
+            showModal('خطأ في المصادقة', 'الرجاء تسجيل الدخول لتغيير الدولة.', true);
+            return;
+        }
+        if (!window.firebaseFirestore) {
+            showModal('خطأ في تهيئة Firebase', 'خدمات قاعدة البيانات غير متوفرة حاليًا.', true);
+            return;
+        }
+        
+        try {
+            const dbInstance = window.firebaseFirestore.getFirestore();
+            const userProfileDocRef = window.firebaseFirestore.doc(
+                dbInstance,
+                'artifacts',
+                window.mercatoAppId,
+                'users',
+                currentUser.uid,
+                'userProfiles',
+                'profile'
+            );
+            
+            await window.firebaseFirestore.setDoc(userProfileDocRef, { country: newCountryCode }, { merge: true });
+            
+            // onSnapshot listener will pick this up and update `userCountry` state
+            showModal('تم التغيير!', `تم تغيير دولتك إلى ${countryNames[newCountryCode] || newCountryCode}.`);
+            console.log("App: Country updated in Firestore to:", newCountryCode);
+
+        } catch (error) {
+            console.error("Error updating user country:", error);
+            showModal('خطأ في تغيير الدولة', `تعذر تحديث الدولة: ${error.message}`, true);
+        }
+      };
+
+      // Function to handle adding product to cart
+      const handleAddToCart = useCallback(async (product) => {
+          if (!currentUser || !currentUser.uid) {
+              showModal('خطأ في المصادقة', 'الرجاء تسجيل الدخول لإضافة المنتجات إلى السلة.', true);
+              return;
+          }
+
+          if (!window.firebaseFirestore || !window.firebaseFirestore.getFirestore || !window.firebaseFirestore.addDoc) {
+              showModal('خطأ في تهيئة Firebase', 'خدمات قاعدة البيانات غير متوفرة حاليًا.', true);
+              return;
+          }
+
+          try {
+              const dbInstance = window.firebaseFirestore.getFirestore();
+              const cartItemsCollectionRef = window.firebaseFirestore.collection(
+                  dbInstance,
+                  'artifacts',
+                  window.mercatoAppId, 
+                  'users',
+                  currentUser.uid,
+                  'cartItems' 
+              );
+              console.log("Adding to cart: Cart collection path:", cartItemsCollectionRef.path);
+
+              const q = window.firebaseFirestore.query(cartItemsCollectionRef, window.firebaseFirestore.where('productId', '==', product.id));
+              console.log("Adding to cart: Checking for existing item with productId:", product.id);
+              const querySnapshot = await window.firebaseFirestore.getDocs(q);
+
+              if (!querySnapshot.empty) {
+                  const existingDocRef = querySnapshot.docs[0].ref;
+                  const currentQuantity = querySnapshot.docs[0].data().quantity || 0;
+                  await window.firebaseFirestore.updateDoc(
+                      existingDocRef,
+                      {
+                          quantity: currentQuantity + 1,
+                          updatedAt: window.firebaseFirestore.serverTimestamp()
+                      }
+                  );
+                  showModal('تم التحديث!', `تم تحديث كمية المنتج "${product.name}" في سلتك إلى ${currentQuantity + 1}.`);
+                  console.log("Cart: Updated quantity for existing product:", product.name);
+              } else {
+                  await window.firebaseFirestore.addDoc(cartItemsCollectionRef, {
+                      productId: product.id, 
+                      name: product.name,
+                      displayPrice: product.displayPrice,
+                      img: product.img,
+                      link: product.link,
+                      quantity: 1, 
+                      createdAt: window.firebaseFirestore.serverTimestamp(),
+                      userId: currentUser.uid 
+                  });
+                  showModal('تمت الإضافة بنجاح!', `تم إضافة المنتج "${product.name}" إلى سلتك.`);
+                  console.log("Cart: Added new product:", product.name);
+              }
+              // Optional: Redirect to cart.html after successful add
+              // window.location.href = 'cart.html';
+          } catch (error) {
+              console.error("Error adding to cart: ", error);
+              showModal('خطأ في إضافة المنتج', `تعذر إضافة المنتج إلى السلة: ${error.message}`, true);
+          }
+      }, [currentUser, showModal]); 
+
+
+      return (
+        <div dir="rtl" className="flex flex-col min-h-screen">
+          {/* Header remains fixed at the top */}
+          <Header pageTitle="العناية بالبشرة" currentUser={currentUser} />
+          
+          {/* Main scrollable content area - takes remaining vertical space */}
+          <div className="flex-grow overflow-y-auto main-scroll-content">
+            <main className="container mx-auto my-10 px-2.5 relative z-30">
+                <h2 className="text-4xl font-extrabold text-[#F8F8F8] text-center mb-6 mt-12 animate-fade-in-up">
+                منتجات قسم العناية بالبشرة
+                </h2>
+
+                {/* Display and allow change of user country */}
+                <div className="flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-4 md:space-x-reverse text-sm text-[#5A7D9D] mb-4">
+                    <div className="flex items-center space-x-1.5 space-x-reverse">
+                        <span className="font-bold">البلد الحالي:</span>
+                        <span className="font-bold text-[#D4AF37]">{displayedCountryName}</span>
+                    </div>
+                    <div className="relative inline-block text-[#F8F8F8] z-20"> 
+                        <select
+                            onChange={handleCountryChange}
+                            value={userCountry}
+                            className="block appearance-none w-auto bg-[#1A2C42] border border-[#5A7D9D] rounded-md py-1.5 px-3 pr-6 leading-tight focus:outline-none focus:bg-[#1A2C42] focus:border-[#D4AF37] shadow-sm transition-all duration-200 text-xs"
+                        >
+                            {/* Updated Country Options */}
+                            <option value="SA">المملكة العربية السعودية</option>
+                            <option value="EG">مصر</option>
+                            <option value="KW">الكويت</option>
+                            <option value="QA">قطر</option>
+                            <option value="AE">الإمارات</option>
+                            <option value="BH">البحرين</option>
+                            <option value="JO">الأردن</option>
+                            <option value="IQ">العراق</option>
+                            <option value="OM">عمان</option>
+                            <option value="SY">سوريا</option>
+                            <option value="LB">لبنان</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-[#D4AF37]">
+                            <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sorting controls */}
+                <div className="flex justify-end mb-4">
+                <div className="relative inline-block text-[#F8F8F8]">
+                    <select
+                    onChange={handleSortChange}
+                    value={`${sortBy}_${sortOrder}`}
+                    className="block appearance-none w-full bg-[#1A2C42] border border-[#5A7D9D] rounded-md py-1.5 px-3 pr-6 leading-tight focus:outline-none focus:bg-[#1A2C42] focus:border-[#D4AF37] shadow-sm transition-all duration-200 text-xs"
+                    >
+                    <option value="none_asc">الترتيب الافتراضي</option>
+                    <option value="price_asc">السعر: من الأقل للأعلى</option>
+                    <option value="price_desc">السعر: من الأعلى للأقل</option>
+                    <option value="name_asc">الاسم: أ-ي</option>
+                    <option value="name_desc">الاسم: ي-أ</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-[#D4AF37]">
+                            <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <ProductDisplayGrid 
+                    searchTerm={currentSearchTerm} 
+                    categoryCode="skincare" /* Category code for "Skin Care" */
+                    sortBy={sortBy} 
+                    sortOrder={sortOrder} 
+                    userCountry={userCountry} 
+                    onAddToCart={handleAddToCart}
+                />
+            </main>
+            {/* Footer is now inside the scrollable content */}
+            <Footer /> 
+          </div>
+
+          <ScrollToTopButton />
+
+          {modalInfo && <CustomModal {...modalInfo} />}
+        </div>
+      );
+    };
+
+    // Render initial loading screen until authentication check is complete
+    ReactDOM.render(
+      <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+          <div class="loading-spinner"></div>
+          <p class="text-xl text-gray-300 mt-2">جاري التحقق من تسجيل الدخول...</p>
+      </div>,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>
+

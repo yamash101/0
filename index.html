@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ميركاتو | تسوق بذكاء، عش أفضل</title>
+  <!-- favicon -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-KPJ7ZG4R');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts for Cairo -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // تكوين Firebase. تم تحديثه من الكود الثاني.
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuttEadee0V2YOZHmG53a2Rck7AvFCFEM",
+      authDomain: "mercato-2cf1d.firebaseapp.com",
+      projectId: "mercato-2cf1d",
+      storageBucket: "mercato-2cf1d.firebas1d.firebasestorage.app",
+      messagingSenderId: "896887505927",
+      appId: "1:896887505927:web:6cb474408bdcfdb1e216a2", // تم تحديث هذا الـ appId
+      measurementId: "G-4WNGK0W077"
+    };
+
+    // استخدام __app_id و __firebase_config إذا كانت متاحة من بيئة Canvas
+    const appConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId; // استخدام projectId كـ appId افتراضي
+    window.mercatoAppId = appId;
+
+    const app = initializeApp(appConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseAuth = auth; // جعل مثيل المصادقة متاحًا عالميًا
+    window.firebaseFirestore = {
+      dbInstance: db,
+      getFirestore: getFirestore,
+      doc: doc,
+      getDoc: getDoc,
+      setDoc: setDoc,
+      updateDoc: updateDoc,
+      collection: collection,
+      arrayUnion: arrayUnion,
+      arrayRemove: arrayRemove,
+      onSnapshot: onSnapshot // مطلوب لتحديثات سلة التسوق في الوقت الفعلي
+    };
+
+    let unsubscribeAuth = null; // متغير لحمل دالة إلغاء الاشتراك
+
+    async function initializeAuthForCanvas() {
+        try {
+            if (typeof __initial_auth_token !== 'undefined') {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (error) {
+            console.error("خطأ في تهيئة مصادقة Firebase:", error);
+        }
+
+        // إعداد مستمع حالة المصادقة مرة واحدة فقط
+        if (!unsubscribeAuth) {
+            unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+                const initialLoadingScreen = document.getElementById('initial-loading');
+                if (initialLoadingScreen) {
+                    initialLoadingScreen.style.display = 'none';
+                }
+                if (window.renderApp) {
+                    window.renderApp(user); // تمرير المستخدم إلى تطبيق React
+                }
+            });
+        }
+    }
+    initializeAuthForCanvas();
+
+    window.handleSignOut = async () => {
+      try {
+        await signOut(window.firebaseAuth);
+        window.location.href = 'login.html'; // إعادة التوجيه إلى صفحة تسجيل الدخول بعد تسجيل الخروج
+      } catch (error) {
+        console.error("حدث خطأ أثناء تسجيل الخروج: ", error);
+        // عرض نافذة منبثقة مخصصة للخطأ
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]';
+        modal.innerHTML = `
+          <div class="bg-white p-2 rounded-sm shadow-md text-center max-w-[150px]">
+            <h3 class="text-sm font-bold text-red-600 mb-2">خطأ في تسجيل الخروج</h3>
+            <p class="text-xs text-gray-700">${error.message || "حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى."}</p>
+            <button class="mt-2 bg-[#1A2C42] text-white px-2 py-1 text-xs rounded-sm hover:bg-gray-800 transition-colors" onclick="this.parentNode.parentNode.remove()">حسناً</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+    };
+  </script>
+
+  <style>
+    /* لوحة الألوان الفاخرة الجديدة (الوضع الليلي الدائم): */
+    /* Primary Dark: #1A2C42 (كحلي عميق / أزرق داكن) */
+    /* Accent Gold: #D4AF37 (ذهبي / برونزي) */
+    /* Light Background (used as text color now): #F8F8F8 (رمادي فاتح جداً / كريمي) */
+    /* Secondary Accent: #5A7D9D (أزرق باهت / تيل) */
+    /* Background Darkest: #0F1A2A */
+    /* Header Background Darker: #0B141F */
+    /* Card Background Dark: #1F2E40 */
+    /* Input/Border: #2C3E50 */
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #0F1A2A; /* خلفية داكنة ثابتة */
+      color: #F8F8F8; /* لون النص الأساسي الفاتح */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      line-height: 1.6;
+      text-align: right;
+      font-size: 0.625rem; /* ~78% من 0.8rem، لتقليص العناصر الأخرى بشكل فعال */
+    }
+
+    /* أحجام الخطوط في Tailwind - للحفاظ على أحجام النصوص جيدة */
+    .text-xs { font-size: 0.7rem; }
+    .text-sm { font-size: 0.8rem; }
+    .text-base { font-size: 0.9rem; }
+    .text-lg { font-size: 1.05rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-5xl { font-size: 2.5rem; }
+
+    /* أنماط شاشة التحميل الأولية */
+    #initial-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0F1A2A;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: #F8F8F8;
+    }
+    .loading-spinner {
+        border: 3.6px solid #2C3E50;
+        border-top: 3.6px solid #D4AF37;
+        border-radius: 50%;
+        width: 22.5px;
+        height: 22.5px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 6.75px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* حاويات عامة لضمان ألا يوجد شريط تمرير أفقي */
+    .container {
+      max-width: 576px; /* للحفاظ على عرض الهاتف */
+      margin: 0 auto;
+      padding: 0 0.8rem;
+    }
+
+    /* أنماط خاصة بالرأس */
+    .header-bg {
+      background: #0B141F;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.5);
+    }
+
+    /* أزرار بلمسة ذهبية */
+    .btn-primary {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      font-weight: 800;
+      padding: 0.4rem 1.3rem;
+      border-radius: 9999px;
+      box-shadow: 0 2.5px 6.5px rgba(212, 175, 55, 0.4);
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-primary:hover {
+      background-color: #C29B27;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(212, 175, 55, 0.6);
+    }
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid #D4AF37;
+      color: #D4AF37;
+      font-weight: 700;
+      padding: 0.35rem 1.2rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-secondary:hover {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      transform: translateY(-0.7px);
+      box-shadow: 0 1.5px 4.5px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Custom modal styles (instead of alert) - Re-used from other pages for consistency */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .custom-modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .custom-modal-content {
+      background-color: #1F2E40;
+      color: #F8F8F8;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      max-width: 270px;
+      width: 90%;
+      text-align: center;
+      transform: translateY(-12px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .custom-modal-overlay.show .custom-modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .custom-modal-content .p-4 {
+        padding: 10px;
+        border-radius: 6px;
+    }
+    .custom-modal-content .text-2xl {
+        font-size: 1.25rem;
+    }
+    .custom-modal-content .text-lg {
+        font-size: 0.9rem;
+    }
+    .custom-modal-content .bg-green-100 { background-color: #38A169; }
+    .custom-modal-content .text-green-700 { color: #D6FAE9; }
+    .custom-modal-content .border-green-400 { border-color: #68D391; }
+    .custom-modal-content .bg-red-100 { background-color: #C53030; }
+    .custom-modal-content .text-red-700 { color: #FEE2E2; }
+    .custom-modal-content .border-red-400 { border-color: #F6AD55; }
+    .custom-modal-content .bg-[#1A2C42] { background-color: #D4AF37; color: #1A2C42; }
+    .custom-modal-content .hover:bg-[#5A7D9D]:hover { background-color: #C29B27; }
+    .custom-modal-content .shadow-lg { box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+    /* أنماط زر العودة للأعلى */
+    .scroll-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #D4AF37;
+      color: #1A2C42;
+      border-radius: 50%;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .scroll-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .scroll-to-top:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    .scroll-to-top svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.5;
+    }
+
+    /* Adjustments for specific elements */
+    .product-card, .category-card {
+        background-color: #1F2E40; /* خلفية أغمق للبطاقات */
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    }
+
+    /* تحديث لافتة العروض الترويجية لزيادة الارتفاع */
+    .promo-banner {
+        background-color: #5A7D9D; /* لون مميز ثانوي لللافتات */
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        padding: 2.5rem 1rem; /* زيادة الـ padding لزيادة الارتفاع */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .promo-banner h2 {
+        margin-bottom: 1.5rem; /* زيادة الهامش السفلي للعنوان */
+    }
+    .promo-banner .btn-primary {
+        margin-top: 1.5rem; /* تم تعديل الهامش العلوي للزر لرفعه قليلاً */
+    }
+
+    /* Ensure category names are centered and fit */
+    .category-card p {
+        text-align: center;
+        font-size: 0.9rem; /* تم التعديل لتناسب أفضل */
+        white-space: nowrap; /* منع التفاف النص */
+        overflow: hidden; /* إخفاء النص الزائد */
+        text-overflow: ellipsis; /* إضافة علامة الحذف للنص الزائد */
+        max-width: 100%; /* التأكد من أنها لا تكسر تخطيط الأصل */
+    }
+    /* Specific adjustment for "اكسسوارات السيارات" to fit within the box if it's too long */
+    .category-card .category-name {
+      font-size: 0.8rem; /* خط أصغر لأسماء الفئات */
+    }
+  </style>
+</head>
+<body class="font-cairo antialiased overflow-x-hidden">
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPJ7ZG4R"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <div id="root" class="flex-grow flex flex-col">
+    <!-- شاشة التحميل الأولية (تختفي عندما يتم تحميل التطبيق) -->
+    <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="loading-spinner"></div>
+        <p class="text-xl text-gray-300 mt-2">جاري التحميل...</p>
+    </div>
+  </div>
+
+  <!-- مكتبات React الأساسية -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const useState = React.useState;
+    const useEffect = React.useEffect;
+    const useCallback = React.useCallback;
+
+    // A placeholder for products data (real data would come from Firestore)
+    const PRODUCTS_DATA = []; // تم حذف المنتجات الثابتة
+
+    const CATEGORIES_DATA = [
+      { name: 'أزياء وملابس', imageUrl: 'https://placehold.co/80x80/1A2C42/D4AF37?text=أزياء', link: 'clothes.html' },
+      { name: 'إلكترونيات', imageUrl: 'https://placehold.co/80x80/1A2C42/D4AF37?text=إلكترونيات', link: 'electronic.html' },
+      { name: 'عناية بالبشرة', imageUrl: 'https://placehold.co/80x80/1A2C42/D4AF37?text=بشرة', link: 'skincare.html' },
+      { name: 'إكسسوارات السيارات', imageUrl: 'https://placehold.co/80x80/1A2C42/D4AF37?text=سيارات', link: 'caraccessories.html' },
+      { name: 'مستلزمات منزلية', imageUrl: 'https://placehold.co/80x80/1A2C42/D4AF37?text=منزلية', link: 'Homeappliances.html' },
+      { name: 'مستلزمات رياضية', imageUrl: 'https://placehold.co/80x80/1A2C42/D4AF37?text=رياضية', link: 'sports-supplies.html' },
+    ];
+
+    // --- مكون المودال المخصص لعرض الرسائل ---
+    const CustomModal = ({ message, type, onClose }) => {
+      const isSuccess = type === 'success';
+      const title = isSuccess ? 'نجاح!' : 'خطأ!';
+      const bgColorClass = isSuccess ? 'bg-green-600' : 'bg-red-600';
+      const textColorClass = 'text-white';
+
+      return (
+        <div className="custom-modal-overlay show">
+          <div className="custom-modal-content">
+            <div className={`p-4 rounded-lg ${bgColorClass} ${textColorClass} mb-3`}>
+              <h3 className="text-xl font-bold mb-2">{title}</h3>
+              <p className="text-sm">{message}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="bg-[#D4AF37] text-[#1A2C42] font-bold py-2 px-6 rounded-full hover:bg-[#C29B27] transition-colors duration-300 shadow-sm text-sm"
+            >
+              حسناً
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // --- مكون الرأس (Header Component) ---
+    const Header = ({ currentUser, cartItemCount }) => {
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+      useEffect(() => {
+        setIsLoggedIn(!!currentUser);
+      }, [currentUser]);
+
+      return (
+        <header className="header-bg text-white p-1.5 shadow-sm rounded-b-md relative z-50">
+          <div className="container mx-auto flex flex-wrap items-center justify-between py-1">
+            {/* الشعار والعنوان (يمين) */}
+            <div className="flex items-center space-x-1.5 space-x-reverse">
+              <img
+                src="https://i.postimg.cc/kGPQ7cK1/Screenshot-Canva.jpg" // تم تحديث الشعار هنا
+                alt="ميركاتو"
+                className="w-auto h-8 object-contain rounded-sm shadow-xs border border-[#D4AF37]"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://placehold.co/32x16/1A2C42/D4AF37?text=ميركاتو';
+                }}
+              />
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-extrabold text-white leading-tight">
+                  ميركاتو
+                </h1>
+                <p className="text-xs text-[#D4AF37] mt-0.25 font-light tracking-wide">
+                  أفضل العروض، بأقل جهد!
+                </p>
+              </div>
+            </div>
+
+            {/* قائمة التنقل الرئيسية (المنتصف) */}
+            <nav className="flex items-center space-x-2 space-x-reverse text-xs font-semibold flex-grow justify-center">
+              <a href="allcategorues.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                أقسامنا
+              </a>
+              <a href="daily-deals.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                عروض اليوم
+              </a>
+              <a href="faq.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                الأسئلة الشائعة
+              </a>
+              <a href="contact.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                اتصل بنا
+              </a>
+            </nav>
+
+            {/* أزرار السلة والملف الشخصي/الدخول (أقصى اليسار) */}
+            <div className="flex items-center space-x-1.5 space-x-reverse">
+              {/* زر السلة - يظهر دائمًا */}
+              <a href="cart.html" className="relative p-1.5 rounded-full bg-[#5A7D9D] hover:bg-[#D4AF37] hover:text-[#1A2C42] transition-colors flex items-center justify-center text-white focus:outline-none focus:ring-1 focus:ring-[#D4AF37]" aria-label="السلة">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L23 4H5.2"/>
+                </svg>
+                {/* عدد المنتجات في السلة */}
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-red-600 text-white text-[0.6rem] rounded-full px-1.5 py-0.5 font-bold leading-none">
+                    {cartItemCount}
+                  </span>
+                )}
+              </a>
+
+              {isLoggedIn ? (
+                // إذا كان المستخدم مسجلاً دخولاً، اعرض زر الملف الشخصي فقط
+                <a href="profile.html" className="flex items-center text-white font-bold py-1 px-2 rounded-full bg-[#5A7D9D] hover:bg-[#D4AF37] hover:text-[#1A2C42] transition-colors duration-300 shadow-xs text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-circle ml-0.5">
+                      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 0 0 1 2 2v1.662"/>
+                    </svg>
+                    الملف الشخصي
+                </a>
+              ) : (
+                // إذا لم يكن مسجلاً دخولاً، اعرض أزرار تسجيل الدخول وإنشاء حساب
+                <div className="flex space-x-1.5 space-x-reverse">
+                  <a href="login.html" className="btn-secondary">
+                    تسجيل الدخول
+                  </a>
+                  <a href="signup.html" className="btn-primary">
+                    إنشاء حساب
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+      );
+    };
+
+    // --- مكون زر العودة للأعلى (Scroll to Top Button Component) ---
+    const ScrollToTopButton = () => {
+      const [isVisible, setIsVisible] = useState(false);
+
+      const toggleVisibility = () => {
+        if (window.pageYOffset > 300) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      };
+
+      const scrollToTop = () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      };
+
+      useEffect(() => {
+        window.addEventListener('scroll', toggleVisibility);
+        return () => window.removeEventListener('scroll', toggleVisibility);
+      }, []);
+
+      return (
+        <button
+          onClick={scrollToTop}
+          className={`scroll-to-top ${isVisible ? 'show' : ''}`}
+          aria-label="العودة للأعلى"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+        </button>
+      );
+    };
+
+    // --- مكون التذييل (Footer Component) ---
+    const Footer = () => {
+      return (
+        <footer className="bg-[#0B141F] text-white py-6 px-1.5 mt-10 rounded-t-md shadow-inner-dark relative z-30">
+          <div className="container mx-auto grid grid-cols-1 gap-2.5 text-center"> {/* تم تعديل grid-cols-1 وإزالة md:grid-cols-3 */}
+
+            {/* تابعنا */}
+            <div className="animate-fade-in-up">
+              <h3 className="text-base font-bold mb-1.5 text-[#D4AF37]">تابعنا</h3>
+              <div className="flex justify-center space-x-2.5 space-x-reverse"> {/* تم تعديل justify-center وإزالة md:justify-end */}
+                <a
+                  href="https://www.tiktok.com/@mercato.0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300"
+                  aria-label="TikTok"
+                >
+                  TikTok
+                </a>
+                <a
+                  href="https://www.instagram.com/mercato.0?igsh=MWRvangxbHdqcXA0bQ=="
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300"
+                  aria-label="Instagram"
+                >
+                  Instagram
+                </a>
+                <a
+                  href="https://t.me/mercato00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300"
+                  aria-label="Telegram"
+                >
+                  Telegram
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-600 mt-3.5 pt-3.5 text-center text-gray-500 text-xs">
+            <p>&copy; 2025 ميركاتو. جميع الحقوق محفوظة.</p>
+            <p className="mt-1">مصمم بحب لتقديم أفضل تجربة تسوق.</p>
+          </div>
+        </footer>
+      );
+    };
+
+    // --- مكون الصفحة الرئيسية (App Component) ---
+    const App = ({ currentUser }) => {
+      const [searchTerm, setSearchTerm] = useState(''); // تم الاحتفاظ بها في الوقت الحالي، ولكن شريط البحث تم إزالته
+      const [displayedProducts, setDisplayedProducts] = useState(PRODUCTS_DATA);
+      const [cartItemCount, setCartItemCount] = useState(0); // حالة لعدد عناصر سلة التسوق
+      const [modal, setModal] = useState(null); // لعرض رسائل الإضافة إلى سلة التسوق
+
+      // عبارات اللافتة الترويجية المتغيرة
+      const promoPhrases = [
+        'تسوق بذكاء، عش أفضل!',
+        'اكتشف أحدث المنتجات والعروض!',
+        'كل ما تحتاجه في مكان واحد!',
+        'جودة عالية، أسعار لا تقبل المنافسة!',
+        'تسوق آمن وسريع، توصيل لباب بيتك!',
+        'عروض يومية لا تفوتها!'
+      ];
+      const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+
+      // تم حذف مصفوفة صور التسوق بالكامل
+      // const shoppingImages = [];
+
+
+      // تأثير لتغيير عبارة اللافتة كل 4 ثوانٍ
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setCurrentPhraseIndex((prevIndex) => (prevIndex + 1) % promoPhrases.length);
+        }, 4000); // تغيير كل 4 ثوانٍ
+        return () => clearInterval(interval); // تنظيف المؤقت عند إلغاء تحميل المكون
+      }, []);
+
+      // تأثير للاستماع إلى تغييرات سلة التسوق في Firestore
+      useEffect(() => {
+        let unsubscribeCart = () => {};
+        if (currentUser && currentUser.uid) {
+          const userCartRef = window.firebaseFirestore.doc(
+            window.firebaseFirestore.dbInstance,
+            'artifacts',
+            window.mercatoAppId,
+            'users',
+            currentUser.uid,
+            'userCart',
+            'items'
+          );
+
+          unsubscribeCart = window.firebaseFirestore.onSnapshot(userCartRef, (docSnap) => {
+            if (docSnap.exists() && docSnap.data().items) {
+              // حساب العدد الإجمالي للعناصر (مع مراعاة الكمية)
+              const totalItems = docSnap.data().items.reduce((acc, item) => acc + (item.quantity || 0), 0);
+              setCartItemCount(totalItems);
+            } else {
+              setCartItemCount(0);
+            }
+          }, (error) => {
+            console.error("خطأ في جلب عناصر سلة التسوق:", error);
+            // تم إزالة رسالة الخطأ "فشل في تحميل عناصر السلة" هنا
+            // setModal({ message: 'فشل في تحميل عناصر السلة.', type: 'error', onClose: () => setModal(null) });
+          });
+        } else {
+          setCartItemCount(0); // إعادة تعيين عدد السلة إذا قام المستخدم بتسجيل الخروج
+        }
+
+        return () => unsubscribeCart(); // تنظيف المستمع عند إلغاء تحميل المكون
+      }, [currentUser]); // إعادة التشغيل عند تغيير currentUser
+
+      useEffect(() => {
+        // لا يوجد شريط بحث، لذا سيعرض هذا التأثير جميع بيانات المنتجات
+        setDisplayedProducts(PRODUCTS_DATA);
+      }, []); // لا توجد تبعيات في الوقت الحالي، يعمل مرة واحدة
+
+      const handleAddToCart = async (productToAdd) => {
+        if (!currentUser || !currentUser.uid) {
+          setModal({ message: 'الرجاء تسجيل الدخول لإضافة منتجات إلى السلة.', type: 'error', onClose: () => setModal(null) });
+          return;
+        }
+
+        try {
+          const userCartDocRef = window.firebaseFirestore.doc(
+            window.firebaseFirestore.dbInstance,
+            'artifacts',
+            window.mercatoAppId,
+            'users',
+            currentUser.uid,
+            'userCart',
+            'items'
+          );
+
+          // الحصول على عناصر السلة الحالية
+          const docSnap = await window.firebaseFirestore.getDoc(userCartDocRef);
+          let currentCartItems = [];
+          if (docSnap.exists() && docSnap.data().items) {
+            currentCartItems = docSnap.data().items;
+          }
+
+          // التحقق مما إذا كان العنصر موجودًا بالفعل في السلة لتحديث الكمية
+          const existingItemIndex = currentCartItems.findIndex(item => item.id === productToAdd.id);
+
+          if (existingItemIndex !== -1) {
+            // العنصر موجود، تحديث الكمية
+            currentCartItems[existingItemIndex].quantity += 1;
+          } else {
+            // العنصر غير موجود، إضافة عنصر جديد بكمية 1
+            currentCartItems.push({ ...productToAdd, quantity: 1 });
+          }
+
+          // تحديث المستند في Firestore
+          await window.firebaseFirestore.setDoc(userCartDocRef, {
+            items: currentCartItems // تخزين المصفوفة المحدثة
+          }, { merge: true }); // استخدام merge لتحديث حقل "items" فقط إذا كانت الحقول الأخرى موجودة
+
+          setModal({ message: 'تم إضافة المنتج إلى السلة بنجاح!', type: 'success', onClose: () => setModal(null) });
+
+        } catch (error) {
+          console.error("خطأ في الإضافة إلى سلة التسوق:", error);
+          setModal({ message: `فشل إضافة المنتج إلى السلة: ${error.message}`, type: 'error', onClose: () => setModal(null) });
+        }
+      };
+
+
+      return (
+        <div dir="rtl" className="flex-grow flex flex-col">
+          <Header currentUser={currentUser} cartItemCount={cartItemCount} />
+
+          <main className="container mx-auto my-6 px-2.5 relative z-30 flex-grow">
+            {/* Hero Section / Banner - تم تحديث النص ليتغير ديناميكيًا وتعديل الارتفاع */}
+            <section className="mb-8 p-4 promo-banner text-center text-white">
+              <h2 className="text-xl font-extrabold mb-1">
+                {promoPhrases[currentPhraseIndex]}
+              </h2>
+              <a href="allcategorues.html" className="btn-primary mt-6 text-sm">
+                تسوق الآن
+              </a>
+            </section>
+
+            {/* Categories Section */}
+            <section className="mb-8">
+              <h2 className="text-xl font-bold text-white mb-4">تصفح حسب الفئة</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {CATEGORIES_DATA.map((category, index) => (
+                  <a href={category.link} key={index} className="category-card p-3 flex flex-col items-center justify-center text-center">
+                    {/* تم إزالة عرض الصورة المحددة، ويمكن استبدالها بأيقونة SVG أو مجرد نص الفئة إذا لم تكن هناك صور */}
+                    <img src={category.imageUrl} alt={category.name} className="w-16 h-16 object-cover rounded-full mb-2 hidden" /> {/* إخفاء الصورة */}
+                    <p className="font-semibold text-white category-name">{category.name}</p>
+                  </a>
+                ))}
+              </div>
+            </section>
+
+            {/* تم حذف قسم معرض الصور الدوار بالكامل */}
+            {/* <section className="mb-8">
+              <ImageCarousel images={shoppingImages} />
+            </section> */}
+          </main>
+
+          <ScrollToTopButton />
+          <Footer />
+          {modal && <CustomModal message={modal.message} type={modal.type} onClose={modal.onClose} />}
+        </div>
+      );
+    };
+
+    // عرض مكون App في div الجذر
+    window.renderApp = (user) => {
+        const initialLoadingScreen = document.getElementById('initial-loading');
+        if (initialLoadingScreen) {
+            initialLoadingScreen.style.display = 'none';
+        }
+        ReactDOM.render(<App currentUser={user} />, document.getElementById('root'));
+    };
+
+    // شاشة تحميل أولية
+    ReactDOM.render(
+      <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+          <div class="loading-spinner"></div>
+          <p class="text-xl text-gray-300 mt-2">جاري التحميل...</p>
+      </div>,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>
+

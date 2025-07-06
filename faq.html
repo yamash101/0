@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الأسئلة الشائعة – ميركاتو | تسوق بذكاء، عش أفضل</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-KPJ7ZG4R');</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;800;900&display=swap" rel="stylesheet" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase configuration.
+    // IMPORTANT: If __firebase_config is not defined by the Canvas environment,
+    // ensure the `userProvidedFirebaseConfig` below contains your actual Firebase project details
+    // (especially apiKey) from your Firebase console (Project settings -> General -> Your apps -> Web app -> Config).
+    // The current apiKey below is a generic placeholder and may not work for your specific project.
+    const userProvidedFirebaseConfig = {
+      apiKey: "AIzaSyCuttEadee0V2YOZHmG53a2Rck7AvFCFEM", // Replace this with your actual API key if necessary
+      authDomain: "mercato-2cf1d.firebaseapp.com",
+      projectId: "mercato-2cf1d",
+      storageBucket: "mercato-2cf1d.firebasestorage.app",
+      messagingSenderId: "896887505927",
+      appId: "1:896887505927:web:6cb474409bdcfdb1e216a2",
+      measurementId: "G-4WNGK0W077"
+    };
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userProvidedFirebaseConfig;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    window.mercatoAppId = appId;
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseFirestore = {
+      dbInstance: db,
+      getFirestore: getFirestore,
+      doc: doc,
+      getDoc: getDoc,
+      setDoc: setDoc,
+      updateDoc: updateDoc,
+      collection: collection,
+      arrayUnion: arrayUnion,
+      arrayRemove: arrayRemove,
+      onSnapshot: onSnapshot // Required for real-time cart updates
+    };
+
+    let unsubscribeAuth = null;
+
+    async function initializeAuthForCanvas() {
+        try {
+            if (typeof __initial_auth_token !== 'undefined') {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (error) {
+            console.error("Firebase authentication initialization error:", error);
+        }
+
+        if (!unsubscribeAuth) {
+            unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+                const initialLoadingScreen = document.getElementById('initial-loading');
+                if (initialLoadingScreen) {
+                    initialLoadingScreen.style.display = 'none';
+                }
+                if (window.renderApp) {
+                    window.renderApp(user); // Pass user to React app
+                }
+            });
+        }
+    }
+    initializeAuthForCanvas();
+
+    window.handleSignOut = async () => {
+      try {
+        await signOut(window.firebaseAuth);
+        window.location.href = 'login.html';
+      } catch (error) {
+        console.error("Error during sign out: ", error);
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]';
+        modal.innerHTML = `
+          <div class="bg-white p-2 rounded-sm shadow-md text-center max-w-[150px]">
+            <h3 class="text-sm font-bold text-red-600 mb-2">خطأ في تسجيل الخروج</h3>
+            <p class="text-xs text-gray-700">${error.message || "حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى."}</p>
+            <button class="mt-2 bg-[#1A2C42] text-white px-2 py-1 text-xs rounded-sm hover:bg-gray-800 transition-colors" onclick="this.parentNode.parentNode.remove()">حسناً</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+    };
+  </script>
+
+  <style>
+    /* New Luxury Color Palette (Permanent Night Mode): */
+    /* Primary Dark: #1A2C42 (Deep Navy / Dark Blue) */
+    /* Accent Gold: #D4AF37 (Gold / Bronze) */
+    /* Light Background (used as text color now): #F8F8F8 (Very Light Gray / Cream) */
+    /* Secondary Accent: #5A7D9D (Pale Blue / Teal) */
+    /* Background Darkest: #0F1A2A */
+    /* Header Background Darker: #0B141F */
+    /* Card Background Dark: #1F2E40 */
+    /* Input/Border: #2C3E50 */
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #0F1A2A; /* Fixed dark background */
+      color: #F8F8F8; /* Light primary text color */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      line-height: 1.6;
+      text-align: right;
+      font-size: 0.625rem; /* ~78% of 0.8rem, effectively scaling down other elements */
+    }
+
+    /* Tailwind font sizes - to keep text sizes appropriate */
+    .text-xs { font-size: 0.7rem; }
+    .text-sm { font-size: 0.8rem; }
+    .text-base { font-size: 0.9rem; }
+    .text-lg { font-size: 1.05rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-5xl { font-size: 2.5rem; }
+
+    /* Initial loading screen styles */
+    #initial-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0F1A2A;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: #F8F8F8;
+    }
+    .loading-spinner {
+        border: 3.6px solid #2C3E50;
+        border-top: 3.6px solid #D4AF37;
+        border-radius: 50%;
+        width: 22.5px;
+        height: 22.5px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 6.75px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* General containers to prevent horizontal scrollbar */
+    .container {
+      max-width: 576px; /* To maintain phone width */
+      margin: 0 auto;
+      padding: 0 0.8rem;
+    }
+
+    /* Header specific styles */
+    .header-bg {
+      background: #0B141F;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.5);
+    }
+
+    /* Gold-accented buttons */
+    .btn-primary {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      font-weight: 800;
+      padding: 0.4rem 1.3rem;
+      border-radius: 9999px;
+      box-shadow: 0 2.5px 6.5px rgba(212, 175, 55, 0.4);
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-primary:hover {
+      background-color: #C29B27;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(212, 175, 55, 0.6);
+    }
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid #D4AF37;
+      color: #D4AF37;
+      font-weight: 700;
+      padding: 0.35rem 1.2rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-secondary:hover {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      transform: translateY(-0.7px);
+      box-shadow: 0 1.5px 4.5px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Custom Modal Styles (replaces alert) */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .custom-modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .custom-modal-content {
+      background-color: #1F2E40;
+      color: #F8F8F8;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      max-width: 270px;
+      width: 90%;
+      text-align: center;
+      transform: translateY(-12px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .custom-modal-overlay.show .custom-modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .custom-modal-content .p-4 { padding: 10px; border-radius: 6px; }
+    .custom-modal-content .text-2xl { font-size: 1.25rem; }
+    .custom-modal-content .text-lg { font-size: 0.9rem; }
+    .custom-modal-content .bg-green-100 { background-color: #38A169; }
+    .custom-modal-content .text-green-700 { color: #D6FAE9; }
+    .custom-modal-content .border-green-400 { border-color: #68D391; }
+    .custom-modal-content .bg-red-100 { background-color: #C53030; }
+    .custom-modal-content .text-red-700 { color: #FEE2E2; }
+    .custom-modal-content .border-red-400 { border-color: #F6AD55; }
+    .custom-modal-content .bg-[#1A2C42] { background-color: #D4AF37; color: #1A2C42; }
+    .custom-modal-content .hover:bg-[#5A7D9D]:hover { background-color: #C29B27; }
+    .custom-modal-content .shadow-lg { box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+    /* Scroll to Top Button styles */
+    .scroll-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #D4AF37;
+      color: #1A2C42;
+      border-radius: 50%;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .scroll-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .scroll-to-top:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    .scroll-to-top svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.5;
+    }
+
+    /* FAQ page specific styles */
+    .faq-item {
+      background: #1F2E40; /* Dark card background */
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid #2C3E50;
+      transition: all 0.3s ease;
+    }
+    .faq-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+    .faq-question {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      color: #D4AF37; /* Gold color for question */
+      font-weight: 700;
+      font-size: 1.05rem; /* text-lg */
+    }
+    .faq-answer {
+      color: #F8F8F8; /* White color for answer */
+      font-size: 0.8rem; /* text-sm */
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+      opacity: 0;
+      padding-top: 0;
+    }
+    .faq-answer.open {
+      max-height: 500px; /* Sufficient value to accommodate content */
+      opacity: 1;
+      padding-top: 10px;
+    }
+    .faq-icon {
+      color: #F8F8F8;
+      transition: transform 0.3s ease;
+      width: 20px;
+      height: 20px;
+    }
+    .faq-icon.rotate {
+      transform: rotate(180deg);
+    }
+    .faq-category-title {
+        color: #D4AF37; /* Gold color for subheadings */
+        font-size: 1.5rem; /* text-2xl */
+        font-weight: 800;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        border-bottom: 2px solid rgba(212, 175, 55, 0.5);
+        padding-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body class="font-cairo antialiased overflow-x-hidden">
+
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPJ7ZG4R"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <div id="root" class="flex-grow flex flex-col">
+    <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="loading-spinner"></div>
+        <p class="text-xl text-gray-300 mt-2">جاري التحميل...</p>
+    </div>
+  </div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const useState = React.useState;
+    const useEffect = React.useEffect;
+    const useCallback = React.useCallback;
+
+    // --- Custom Modal Component for displaying messages ---
+    const CustomModal = ({ message, type, onClose }) => {
+      const isSuccess = type === 'success';
+      const title = isSuccess ? 'نجاح!' : 'خطأ!';
+      const bgColorClass = isSuccess ? 'bg-green-600' : 'bg-red-600';
+      const textColorClass = 'text-white';
+      const borderColorClass = isSuccess ? 'border-green-400' : 'border-red-400';
+
+      return (
+        <div className="custom-modal-overlay show">
+          <div className="custom-modal-content">
+            <div className={`p-4 rounded-lg border ${bgColorClass} ${textColorClass} mb-3`}>
+              <h3 className="text-xl font-bold mb-2">{title}</h3>
+              <p className="text-sm">{message}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="bg-[#D4AF37] text-[#1A2C42] font-bold py-2 px-6 rounded-full hover:bg-[#C29B27] transition-colors duration-300 shadow-sm text-sm"
+            >
+              حسناً
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // --- Header Component ---
+    const Header = ({ currentUser }) => {
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+      const [cartItemCount, setCartItemCount] = useState(0);
+
+      useEffect(() => {
+        setIsLoggedIn(!!currentUser);
+      }, [currentUser]);
+
+      // Effect to listen for real-time cart item updates from Firestore
+      useEffect(() => {
+        let unsubscribeCart = () => {};
+        if (currentUser && currentUser.uid) {
+          const userCartRef = window.firebaseFirestore.doc(
+            window.firebaseFirestore.dbInstance,
+            'artifacts',
+            window.mercatoAppId,
+            'users',
+            currentUser.uid,
+            'userCart',
+            'items'
+          );
+
+          unsubscribeCart = window.firebaseFirestore.onSnapshot(userCartRef, (docSnap) => {
+            if (docSnap.exists() && docSnap.data().items) {
+              const items = docSnap.data().items;
+              setCartItemCount(items.reduce((total, item) => total + (item.quantity || 0), 0));
+            } else {
+              setCartItemCount(0);
+            }
+          }, (error) => {
+            console.error("Error fetching cart items:", error);
+            // Optionally, display a modal here if cart fetching fails
+          });
+        } else {
+          setCartItemCount(0); // Reset cart count if user logs out
+        }
+
+        return () => unsubscribeCart(); // Clean up listener on component unmount
+      }, [currentUser]); // Re-run when currentUser changes
+
+      return (
+        <header className="header-bg text-white p-1.5 shadow-sm rounded-b-md relative z-50">
+          <div className="container mx-auto flex flex-wrap items-center justify-between py-1">
+            {/* Logo and Title (right) */}
+            <div className="flex items-center space-x-1.5 space-x-reverse">
+              <img
+                src="https://i.postimg.cc/kGPQ7cK1/Screenshot-Canva.jpg" /* Updated logo URL */
+                alt="ميركاتو"
+                className="w-auto h-8 object-contain rounded-sm shadow-xs border border-[#D4AF37]"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://placehold.co/32x16/1A2C42/D4AF37?text=ميركاتو';
+                }}
+              />
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-extrabold text-white leading-tight">
+                  ميركاتو
+                </h1>
+                <p className="text-xs text-[#D4AF37] mt-0.25 font-light tracking-wide">
+                  تسوق بذكاء، عش أفضل!
+                </p>
+              </div>
+            </div>
+
+            {/* Main Navigation (center) */}
+            <nav className="flex items-center space-x-2 space-x-reverse text-xs font-semibold flex-grow justify-center">
+              <a href="index.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                الرئيسية
+              </a>
+              <a href="all-categories.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                أقسامنا
+              </a>
+              <a href="daily-deals.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                عروض اليوم
+              </a>
+              {/* Removed "الأسئلة الشائعة" button */}
+              <a href="contact.html" className="hover:text-[#D4AF37] transition-colors p-0.5 rounded-xs hover:bg-white hover:bg-opacity-10">
+                اتصل بنا
+              </a>
+            </nav>
+
+            {/* Cart and Profile/Login buttons (far left) */}
+            <div className="flex items-center space-x-1.5 space-x-reverse">
+              {/* Cart Button - always visible */}
+              <a href="cart.html" className="relative p-1.5 rounded-full bg-[#5A7D9D] hover:bg-[#D4AF37] hover:text-[#1A2C42] transition-colors flex items-center justify-center text-white focus:outline-none focus:ring-1 focus:ring-[#D4AF37]" aria-label="السلة">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucude-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L23 4H5.2"/>
+                </svg>
+                {/* Cart item count */}
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-red-600 text-white text-[0.6rem] rounded-full px-1.5 py-0.5 font-bold leading-none">
+                    {cartItemCount}
+                  </span>
+                )}
+              </a>
+
+              {isLoggedIn ? (
+                // If user is logged in, show profile button only
+                <a href="profile.html" className="flex items-center text-white font-bold py-1 px-2 rounded-full bg-[#5A7D9D] hover:bg-[#D4AF37] hover:text-[#1A2C42] transition-colors duration-300 shadow-xs text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-circle ml-0.5">
+                      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                    </svg>
+                    الملف الشخصي
+                </a>
+              ) : (
+                // If not logged in, show login and signup buttons
+                <div className="flex space-x-1.5 space-x-reverse">
+                  <a href="login.html" className="btn-secondary">
+                    تسجيل الدخول
+                  </a>
+                  <a href="signup.html" className="btn-primary">
+                    إنشاء حساب
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+      );
+    };
+
+    // --- Scroll to Top Button Component ---
+    const ScrollToTopButton = () => {
+      const [isVisible, setIsVisible] = useState(false);
+
+      const toggleVisibility = () => {
+        if (window.pageYOffset > 300) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      };
+
+      const scrollToTop = () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      };
+
+      useEffect(() => {
+        window.addEventListener('scroll', toggleVisibility);
+        return () => window.removeEventListener('scroll', toggleVisibility);
+      }, []);
+
+      return (
+        <button
+          onClick={scrollToTop}
+          className={`scroll-to-top ${isVisible ? 'show' : ''}`}
+          aria-label="العودة للأعلى"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+        </button>
+      );
+    };
+
+    // --- Footer Component ---
+    const Footer = () => {
+      return (
+        <footer className="bg-[#0B141F] text-white py-6 px-1.5 mt-10 rounded-t-md shadow-inner-dark relative z-30">
+          <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-2.5 text-center md:text-right">
+            {/* Removed Contact Information */}
+            {/* Removed Quick Links */}
+
+            {/* Follow Us */}
+            <div className="animate-fade-in-up animation-delay-400 col-span-full md:col-span-1"> {/* Adjusted column span for centering */}
+              <h3 className="text-base font-bold mb-1.5 text-[#D4AF37]">تابعنا</h3>
+              <div className="flex justify-center md:justify-end space-x-2.5 space-x-reverse">
+                {/* Social media text links */}
+                <a
+                  href="https://www.tiktok.com/@mercato.0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                  aria-label="TikTok"
+                >
+                  TIKTOK
+                </a>
+                <a
+                  href="https://www.instagram.com/mercato.0?igsh=MWRvangxbHdqcXA0bQ=="
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                  aria-label="Instagram"
+                >
+                  Instagram
+                </a>
+                <a
+                  href="https://t.me/mercato00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                  aria-label="Telegram"
+                >
+                  Telegram
+                </a>
+                <a
+                  href="https://www.facebook.com/yourpage" /* Placeholder for Facebook link */
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#D4AF37] transition-colors transform hover:scale-110 duration-300 text-xs"
+                  aria-label="Facebook"
+                >
+                  FACEBOOK
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-600 mt-3.5 pt-3.5 text-center text-gray-500 text-xs">
+            <p>&copy; 2025 ميركاتو. جميع الحقوق محفوظة.</p>
+            <p className="mt-1">مصمم بحب لتقديم أفضل تجربة تسوق.</p>
+          </div>
+        </footer>
+      );
+    };
+
+    // --- Single FAQ Item Component ---
+    const FAQItem = ({ question, answer }) => {
+      const [isOpen, setIsOpen] = useState(false);
+
+      const toggleOpen = () => {
+        setIsOpen(!isOpen);
+      };
+
+      return (
+        <div className="faq-item">
+          <div className="faq-question" onClick={toggleOpen}>
+            <span>{question}</span>
+            <svg
+              className={`faq-icon ${isOpen ? 'rotate' : ''}`}
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </div>
+          <div className={`faq-answer ${isOpen ? 'open' : ''}`}>
+            <p>{answer}</p>
+          </div>
+        </div>
+      );
+    };
+
+    // --- FAQ Page Component ---
+    const FAQPage = ({ currentUser }) => {
+      const generalQuestions = [
+        {
+          question: "ما هي ميركاتو؟",
+          answer: "ميركاتو هي منصة تسوق إلكتروني مبتكرة تربطك بأفضل المنتجات والعروض من المتاجر العالمية الموثوقة، مع التركيز بشكل خاص على توفير تجربة شراء سهلة وآمنة للمنتجات من AliExpress والمتاجر الشبيهة، وذلك من خلال وسيط موثوق."
+        },
+        {
+          question: "كيف يمكنني إنشاء حساب في ميركاتو؟",
+          answer: "يمكنك إنشاء حساب بسهولة بالضغط على زر 'إنشاء حساب' في الزاوية العلوية اليسرى من الصفحة واتباع الخطوات البسيطة لإدخال معلوماتك وتأكيد بريدك الإلكتروني."
+        },
+        {
+          question: "هل الشراء من ميركاتو آمن؟",
+          answer: "نعم، الشراء من ميركاتو آمن للغاية. نحن نستخدم أحدث تقنيات التشفير لحماية بياناتك الشخصية والمالية، ونعمل كوسيط موثوق لضمان وصول طلباتك بأمان."
+        },
+        {
+          question: "كيف أبحث عن منتج معين؟",
+          answer: "يمكنك استخدام شريط البحث الموجود في أعلى الصفحة للبحث عن المنتجات بالاسم، الفئة، أو الكلمات المفتاحية. كما يمكنك تصفح الأقسام المختلفة للموقع."
+        }
+      ];
+
+      const aliexpressQuestions = [
+        {
+          question: "كيف يمكنني الشراء بدقة من AliExpress عبر ميركاتو؟",
+          answer: "نحن في ميركاتو نسهل عليك عملية الشراء من AliExpress. كل ما عليك هو تزويدنا برابط المنتج الدقيق الذي تريده من AliExpress، وسنقوم بمراجعة المنتج، التحقق من جودته وموثوقية البائع، والتأكد من توافق المواصفات قبل إتمام عملية الشراء نيابةً عنك."
+        },
+        {
+          question: "ما هي المعلومات التي أحتاجها لتزويدكم بها عند طلب منتج من AliExpress؟",
+          answer: "لضمان دقة الطلب، يرجى تزويدنا برابط المنتج كاملاً من AliExpress، وأي تفاصيل مهمة مثل اللون، الحجم، نوع القابس (إذا كان جهازًا إلكترونيًا)، الكمية، وأي ملاحظات خاصة أخرى يرجى كتابتها في خانة الملاحظات."
+        },
+        {
+          question: "كيف أتأكد من أنني أطلب المنتج الصحيح من AliExpress؟",
+          answer: "ننصحك دائمًا بالتحقق بعناية من وصف المنتج، صور المنتج، وتقييمات البائعين على AliExpress قبل تزويدنا بالرابط. نحن أيضًا نقوم بمراجعة هذه التفاصيل للتأكد من مطابقة طلبك للمنتج المطلوب."
+        },
+        {
+          question: "ماذا لو كان هناك خيارات متعددة للمنتج (مثل الحجم واللون) على AliExpress؟",
+          answer: "يرجى تحديد الخيار الدقيق (الحجم، اللون، المواصفات) الذي تريده عند إرسال رابط المنتج إلينا. إذا كانت هناك أي شكوك، سنتواصل معك للتأكد قبل إتمام الطلب."
+        },
+        {
+            question: "ماذا عن سياسة الإرجاع أو الاستبدال للمنتجات التي يتم شراؤها من AliExpress عبر ميركاتو؟",
+            answer: "بصفتنا وسيطًا، نلتزم بتطبيق سياسات الإرجاع والاستبدال الخاصة بـ AliExpress. إذا كان هناك عيب في المنتج أو لم يطابق الوصف، سنقوم بمساعدتك في تقديم طلب الإرجاع أو الاستبدال لدى البائع، مع الأخذ في الاعتبار أن هذه العملية قد تستغرق وقتًا."
+        }
+      ];
+
+      const siteUsageQuestions = [
+        {
+          question: "كيف أستخدم الموقع لتصفح المنتجات؟",
+          answer: "الموقع مصمم ليكون سهل الاستخدام. يمكنك استخدام قوائم الأقسام في الشريط العلوي أو الجانبي، أو استعراض عروض اليوم والمنتجات الجديدة من الصفحة الرئيسية. كل منتج له صفحة خاصة توضح تفاصيله وصوره."
+        },
+        {
+          question: "هل يمكنني تتبع حالة طلبي؟",
+          answer: "نعم، بمجرد إتمام عملية الشراء، ستتلقى رقم تتبع لطلبك. يمكنك استخدام هذا الرقم في صفحة 'تتبع الطلبات' لمتابعة حالة شحنتك خطوة بخطوة حتى وصولها إليك."
+        },
+        {
+          question: "ما هي طرق الدفع المتاحة؟",
+          answer: "نوفر عدة طرق دفع آمنة ومريحة، بما في ذلك الدفع عند الاستلام، والتحويل البنكي، وغيرها من الخيارات التي سيتم عرضها لك عند إتمام عملية الشراء."
+        },
+        {
+          question: "كيف يمكنني إلغاء طلب أو تعديله؟",
+          answer: "إذا كنت ترغب في إلغاء أو تعديل طلبك، يرجى التواصل معنا في أسرع وقت ممكن عبر صفحة 'اتصل بنا' أو من خلال رقم خدمة العملاء. سيتم التعامل مع طلبك وفقًا لسياسة الإلغاء والتعديل الخاصة بنا."
+        }
+      ];
+
+      const purchaseRecommendations = [
+        {
+          question: "ما هي توصياتكم للشراء الذكي من ميركاتو؟",
+          answer: "لتحقيق أفضل تجربة تسوق، نوصي بما يلي: 1. **مقارنة الأسعار:** قارن بين المنتجات المشابهة للعثور على أفضل صفقة. 2. **قراءة التقييمات:** انتبه لتقييمات المنتجات والبائعين. 3. **تحقق من المواصفات:** تأكد من أن المنتج يلبي احتياجاتك من حيث الحجم، اللون، الوظائف. 4. **الاستفادة من العروض:** تابع قسم 'عروض اليوم' للحصول على خصومات مميزة."
+        },
+        {
+          question: "كيف أتعرف على المنتجات ذات الجودة العالية؟",
+          answer: "ابحث عن المنتجات التي تحتوي على عدد كبير من التقييمات الإيجابية والصور الواقعية من المشترين. البائعون ذوو التقييمات العالية والذين يقدمون تفاصيل دقيقة عن المنتجات غالبًا ما يقدمون منتجات أفضل جودة."
+        },
+        {
+          question: "هل تقدمون ضمانًا على المنتجات؟",
+          answer: "بصفتنا وسيطًا، الضمان على المنتجات يعتمد على سياسات البائع الأصلي في AliExpress. ومع ذلك، نحن نضمن أننا سنبذل قصارى جهدنا لمساعدتك في حل أي مشكلات تنشأ مع طلبك، وسنتواصل مع البائع نيابةً عنك."
+        },
+        {
+          question: "ماذا أفعل إذا واجهت مشكلة مع منتج اشتريته؟",
+          answer: "إذا واجهت أي مشكلة مع منتج تم شراؤه عبر ميركاتو، يرجى التواصل مع فريق دعم العملاء لدينا فورًا. سنقوم بالتحقيق في المشكلة وسنعمل على إيجاد أفضل حل ممكن لك، سواء كان ذلك بتقديم المساعدة في الإرجاع، الاستبدال، أو استرداد الأموال حسب الحالة."
+        }
+      ];
+
+
+      return (
+        <div dir="rtl" className="flex-grow flex flex-col">
+          <Header currentUser={currentUser} />
+          
+          <main className="container mx-auto my-10 px-2.5 relative z-30 flex-grow">
+            <h2 className="text-4xl font-extrabold text-[#F8F8F8] text-center mb-8 mt-12">
+              الأسئلة الشائعة
+            </h2>
+
+            <p className="text-sm text-gray-300 text-center mb-8 max-w-lg mx-auto">
+                هنا ستجد إجابات لأكثر الأسئلة شيوعًا حول استخدام موقع ميركاتو وكيفية الاستفادة القصوى من خدماتنا، خصوصًا عند الشراء من AliExpress.
+            </p>
+
+            <h3 className="faq-category-title">أسئلة عامة</h3>
+            <div className="space-y-3">
+              {generalQuestions.map((faq, index) => (
+                <FAQItem key={index} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+
+            <h3 className="faq-category-title">الشراء الدقيق من AliExpress عبر ميركاتو</h3>
+            <div className="space-y-3">
+              {aliexpressQuestions.map((faq, index) => (
+                <FAQItem key={index} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+
+            <h3 className="faq-category-title">كيفية تشغيل واستخدام الموقع</h3>
+            <div className="space-y-3">
+              {siteUsageQuestions.map((faq, index) => (
+                <FAQItem key={index} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+
+            <h3 className="faq-category-title">توصيات الشراء</h3>
+            <div className="space-y-3">
+              {purchaseRecommendations.map((faq, index) => (
+                <FAQItem key={index} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+
+          </main>
+
+          <ScrollToTopButton />
+          <Footer />
+        </div>
+      );
+    };
+
+    // Render the app component in the root
+    window.renderApp = (user) => {
+        const initialLoadingScreen = document.getElementById('initial-loading');
+        if (initialLoadingScreen) {
+            initialLoadingScreen.style.display = 'none';
+        }
+        ReactDOM.render(<FAQPage currentUser={user} />, document.getElementById('root'));
+    };
+
+    // Initial loading screen
+    ReactDOM.render(
+      <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+          <div class="loading-spinner"></div>
+          <p class="text-xl text-gray-300 mt-2">جاري التحميل...</p>
+      </div>,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>
+

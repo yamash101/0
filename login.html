@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تسجيل الدخول – ميركاتو | تسوق بذكاء، عش أفضل</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-KPJ7ZG4R');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts for Cairo -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // تكوين Firebase.
+    // هام: إذا لم يتم تحديد __firebase_config بواسطة بيئة Canvas،
+    // تأكد من أن `userProvidedFirebaseConfig` أدناه يحتوي على تفاصيل مشروع Firebase الفعلية الخاصة بك
+    // (خاصة apiKey) من Firebase Console (إعدادات المشروع -> عام -> تطبيقاتك -> تطبيق الويب -> التكوين).
+    // مفتاح API الحالي أدناه هو عنصر نائب عام وقد لا يعمل لمشروعك المحدد.
+    const userProvidedFirebaseConfig = {
+      apiKey: "AIzaSyCuttEadee0V2YOZHmG53a2Rck7AvFCFEM", // استبدل هذا بمفتاح API الفعلي الخاص بك إذا لزم الأمر
+      authDomain: "mercato-2cf1d.firebaseapp.com",
+      projectId: "mercato-2cf1d",
+      storageBucket: "mercato-2cf1d.firebasestorage.app",
+      messagingSenderId: "896887505927",
+      appId: "1:896887505927:web:6cb474409bdcfdb1e216a2",
+      measurementId: "G-4WNGK0W077"
+    };
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userProvidedFirebaseConfig;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    window.mercatoAppId = appId;
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseApp = app;
+    window.firebaseAuth = auth;
+    window.firebaseFirestore = {
+        dbInstance: db,
+        getFirestore: getFirestore,
+        doc: doc,
+        setDoc: setDoc,
+        getDoc: getDoc,
+        serverTimestamp: serverTimestamp
+    };
+    window.firebaseAuthMethods = {
+      signInWithEmailAndPassword: signInWithEmailAndPassword,
+    };
+
+    async function initializeAuthForCanvasAndRender() {
+      try {
+        if (typeof __initial_auth_token !== 'undefined') {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error("خطأ في تهيئة مصادقة Firebase:", error);
+      }
+
+      const initialLoadingScreen = document.getElementById('initial-loading');
+      if (initialLoadingScreen) {
+        initialLoadingScreen.style.display = 'none';
+      }
+      if (window.renderApp) {
+        window.renderApp();
+      }
+    }
+    initializeAuthForCanvasAndRender();
+  </script>
+
+  <style>
+    /* لوحة الألوان الفاخرة الجديدة (الوضع الليلي الدائم): */
+    /* Primary Dark: #1A2C42 (كحلي عميق / أزرق داكن) */
+    /* Accent Gold: #D4AF37 (ذهبي / برونزي) */
+    /* Light Background (used as text color now): #F8F8F8 (رمادي فاتح جداً / كريمي) */
+    /* Secondary Accent: #5A7D9D (أزرق باهت / تيل) */
+    /* Background Darkest: #0F1A2A */
+    /* Form Background: #1F2E40 */
+    /* Input/Border: #2C3E50 */
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #0F1A2A; /* خلفية داكنة ثابتة */
+      color: #F8F8F8; /* لون النص الأساسي الفاتح */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      line-height: 1.6;
+      text-align: right;
+      font-size: 0.625rem; /* ~78% من 0.8rem، لتقليص العناصر الأخرى بشكل فعال */
+    }
+
+    /* أحجام الخطوط في Tailwind - للحفاظ على أحجام النصوص جيدة */
+    .text-xs { font-size: 0.7rem; }
+    .text-sm { font-size: 0.8rem; }
+    .text-base { font-size: 0.9rem; }
+    .text-lg { font-size: 1.05rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-5xl { font-size: 2.5rem; }
+
+    /* أزرار بلمسة ذهبية */
+    .btn-primary {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      font-weight: 800;
+      padding: 0.4rem 1.3rem;
+      border-radius: 9999px;
+      box-shadow: 0 2.5px 6.5px rgba(212, 175, 55, 0.4);
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    .btn-primary:hover {
+      background-color: #C29B27;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(212, 175, 55, 0.6);
+    }
+    .btn-secondary { /* Not directly used in login/signup, but kept for consistency */
+      background-color: transparent;
+      border: 1px solid #D4AF37;
+      color: #D4AF37;
+      font-weight: 700;
+      padding: 0.35rem 1.2rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      font-size: 0.7rem;
+    }
+    .btn-secondary:hover {
+      background-color: #D4AF37;
+      color: #1A2C42;
+      transform: translateY(-0.7px);
+      box-shadow: 0 1.5px 4.5px rgba(212, 175, 55, 0.3);
+    }
+
+    /* أنماط شاشة التحميل الأولية */
+    #initial-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0F1A2A;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: #F8F8F8;
+    }
+    .loading-spinner {
+        border: 3.6px solid #2C3E50;
+        border-top: 3.6px solid #D4AF37;
+        border-radius: 50%;
+        width: 22.5px;
+        height: 22.5px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 6.75px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* أنماط المودال المخصصة (بدلاً من alert) */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .custom-modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .custom-modal-content {
+      background-color: #1F2E40;
+      color: #F8F8F8;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      max-width: 270px;
+      width: 90%;
+      text-align: center;
+      transform: translateY(-12px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .custom-modal-overlay.show .custom-modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .custom-modal-content .p-4 {
+        padding: 10px;
+        border-radius: 6px;
+    }
+    .custom-modal-content .text-2xl {
+        font-size: 1.25rem;
+    }
+    .custom-modal-content .text-lg {
+        font-size: 0.9rem;
+    }
+    .custom-modal-content .bg-green-100 { background-color: #38A169; }
+    .custom-modal-content .text-green-700 { color: #D6FAE9; }
+    .custom-modal-content .border-green-400 { border-color: #68D391; }
+    .custom-modal-content .bg-red-100 { background-color: #C53030; }
+    .custom-modal-content .text-red-700 { color: #FEE2E2; }
+    .custom-modal-content .border-red-400 { border-color: #F6AD55; }
+    .custom-modal-content .bg-[#1A2C42] { background-color: #D4AF37; color: #1A2C42; }
+    .custom-modal-content .hover:bg-[#5A7D9D]:hover { background-color: #C29B27; }
+    .custom-modal-content .shadow-lg { box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+    /* Form specific styles */
+    .login-form-card {
+        background: #1F2E40;
+        color: #F8F8F8;
+        padding: 25px;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .login-form-card .text-[#1A2C42] {
+        color: #F8F8F8;
+    }
+    .login-form-card .text-[#5A7D9D] {
+        color: #9EC0D8;
+    }
+    .login-form-card input {
+        background: #2C3E50;
+        color: #F8F8F8;
+        border: 1px solid #5A7D9D;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    .login-form-card input::placeholder {
+        color: #A0AEC0;
+    }
+    .login-form-card input:focus {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 1px #D4AF37;
+    }
+    .login-form-card .text-lg {
+        font-size: 0.9rem;
+    }
+    .login-form-card .text-2xl {
+        font-size: 1.25rem;
+    }
+    .login-form-card .w-32 {
+        width: 80px;
+    }
+    .login-form-card .animate-spin {
+        color: #F8F8F8;
+    }
+  </style>
+</head>
+<body class="font-cairo antialiased overflow-x-hidden">
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPJ7ZG4R"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <div id="root" class="flex-grow flex flex-col">
+    <!-- شاشة التحميل الأولية (تختفي عندما يتم تحميل التطبيق) -->
+    <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="loading-spinner"></div>
+        <p class="text-xl text-gray-300 mt-2">جاري التحقق من تسجيل الدخول...</p>
+    </div>
+  </div>
+
+  <!-- مكتبات React الأساسية -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const useState = React.useState;
+    const useEffect = React.useEffect;
+
+    // مكون المودال المخصص لعرض الرسائل
+    const CustomModal = ({ message, type, onClose }) => {
+      const isSuccess = type === 'success';
+      const title = isSuccess ? 'نجاح!' : 'خطأ!';
+      const bgColorClass = isSuccess ? 'bg-green-600' : 'bg-red-600';
+      const textColorClass = 'text-white';
+      const borderColorClass = isSuccess ? 'border-green-400' : 'border-red-400';
+
+      return (
+        <div className="custom-modal-overlay show">
+          <div className="custom-modal-content">
+            <div className={`p-4 rounded-lg border ${bgColorClass} ${textColorClass} mb-3`}>
+              <h3 className="text-xl font-bold mb-2">{title}</h3>
+              <p className="text-sm">{message}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="bg-[#D4AF37] text-[#1A2C42] font-bold py-2 px-6 rounded-full hover:bg-[#C29B27] transition-colors duration-300 shadow-sm text-sm"
+            >
+              حسناً
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // --- مكون صفحة تسجيل الدخول (Login) ---
+    const LoginPage = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [modal, setModal] = useState(null); // { message, type }
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setModal(null); // Clear previous messages
+
+        // تحقق من توفر Firebase Auth
+        if (!window.firebaseAuthMethods || !window.firebaseAuth) {
+          setModal({ message: 'خطأ في تهيئة Firebase. يرجى تحديث الصفحة.', type: 'error' });
+          setLoading(false);
+          return;
+        }
+
+        try {
+          await window.firebaseAuthMethods.signInWithEmailAndPassword(
+            window.firebaseAuth,
+            email,
+            password
+          );
+          setModal({ message: 'تم تسجيل الدخول بنجاح! سيتم توجيهك إلى الصفحة الرئيسية.', type: 'success' });
+          // إعادة التوجيه إلى الصفحة الرئيسية بعد النجاح بفترة قصيرة
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+
+        } catch (error) {
+          let errorMessage = 'حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.';
+          if (error.code) {
+            switch (error.code) {
+              case 'auth/invalid-email':
+                errorMessage = 'صيغة البريد الإلكتروني غير صحيحة.';
+                break;
+              case 'auth/user-disabled':
+                errorMessage = 'تم تعطيل هذا الحساب.';
+                break;
+              case 'auth/user-not-found':
+              case 'auth/wrong-password':
+                errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+                break;
+              case 'auth/invalid-credential':
+                errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+                break;
+              case 'auth/too-many-requests':
+                  errorMessage = 'عدد كبير جدًا من محاولات تسجيل الدخول الفاشلة. يرجى المحاولة لاحقاً.';
+                  break;
+              default:
+                errorMessage = `خطأ: ${error.message}`;
+            }
+          }
+          setModal({ message: errorMessage, type: 'error' });
+          console.error("Login error:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-[#0F1A2A] p-2.5">
+          <div className="login-form-card rounded-xl shadow-xl p-6 w-full max-w-xs animate-fade-in-up">
+            <div className="text-center mb-4">
+              <img
+                src="https://i.postimg.cc/kGPQ7cK1/Screenshot-Canva.jpg"
+                alt="ميركاتو"
+                className="w-20 h-auto mx-auto mb-2"
+              />
+              <h2 className="text-2xl font-extrabold text-white mb-1">تسجيل الدخول</h2>
+              <p className="text-[#9EC0D8] text-sm">أهلاً بك مرة أخرى في ميركاتو!</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              <div>
+                <label className="block text-base font-semibold text-white mb-1" htmlFor="email">
+                  البريد الإلكتروني
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-2.5 rounded-lg border border-[#5A7D9D] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all duration-300 text-sm bg-[#2C3E50] text-[#F8F8F8]"
+                  placeholder="أدخل بريدك الإلكتروني"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-base font-semibold text-white mb-1" htmlFor="password">
+                  كلمة المرور
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-2.5 rounded-lg border border-[#5A7D9D] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all duration-300 text-sm bg-[#2C3E50] text-[#F8F8F8]"
+                  placeholder="أدخل كلمة المرور"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn-primary w-full text-base py-2.5 flex items-center justify-center space-x-1.5 space-x-reverse"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>جاري تسجيل الدخول...</span>
+                  </>
+                ) : (
+                  <span>تسجيل الدخول</span>
+                )}
+              </button>
+            </form>
+
+            <p className="text-center text-sm mt-4 text-white">
+              <a href="forgot-password.html" className="text-[#D4AF37] hover:underline font-semibold">
+                هل نسيت كلمة المرور؟
+              </a>
+            </p>
+            <p className="text-center text-sm mt-2 text-white">
+              ليس لديك حساب؟{' '}
+              <a href="signup.html" className="text-[#D4AF37] hover:underline font-semibold">
+                إنشاء حساب جديد
+              </a>
+            </p>
+          </div>
+          {modal && <CustomModal message={modal.message} type={modal.type} onClose={() => setModal(null)} />}
+        </div>
+      );
+    };
+
+    // عرض مكون LoginPage في div الجذر بعد التحقق من حالة المصادقة
+    window.renderApp = () => {
+        const initialLoadingScreen = document.getElementById('initial-loading');
+        if (initialLoadingScreen) {
+            initialLoadingScreen.style.display = 'none';
+        }
+        ReactDOM.render(<LoginPage />, document.getElementById('root'));
+    };
+
+    // شاشة تحميل أولية لضمان أن Firebase قد تم تهيئته والتحقق من حالة المصادقة
+    ReactDOM.render(
+      <div id="initial-loading" class="flex flex-col items-center justify-center min-h-screen">
+          <div class="loading-spinner"></div>
+          <p class="text-xl text-gray-300 mt-2">جاري التحقق من تسجيل الدخول...</p>
+      </div>,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>
+
