@@ -377,7 +377,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, serverTimestamp, addDoc, updateDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, serverTimestamp, addDoc, updateDoc, onSnapshot, setDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // User-provided Firebase configuration (from faq.html)
     const userProvidedFirebaseConfig = {
@@ -420,7 +420,8 @@
       addDoc: addDoc,
       updateDoc: updateDoc,
       onSnapshot: onSnapshot, 
-      setDoc: setDoc 
+      setDoc: setDoc,
+      deleteField: deleteField // Make deleteField available
     };
     window.firebaseAuthInstance = auth; // Make auth instance globally available
 
@@ -846,9 +847,14 @@
           
           console.log("ProductDisplayGrid: Base products collection path:", productsRef.path);
 
-          // Apply category filter
-          productsQuery = window.firebaseFirestore.query(productsQuery, window.firebaseFirestore.where('category', '==', categoryCode));
-          console.log("ProductDisplayGrid: Applied category filter: category == ", categoryCode);
+          // Apply category filter based on categoryCode
+          if (categoryCode === "dailyDeals") {
+              productsQuery = window.firebaseFirestore.query(productsQuery, window.firebaseFirestore.where('isDaily', '==', true));
+              console.log("ProductDisplayGrid: Applied filter for Daily Deals: isDaily == true");
+          } else {
+              productsQuery = window.firebaseFirestore.query(productsQuery, window.firebaseFirestore.where('category', '==', categoryCode));
+              console.log("ProductDisplayGrid: Applied category filter: category == ", categoryCode);
+          }
           
           // Apply country filter
           if (userCountry && userCountry !== 'اختر الدولة' && userCountry !== 'لم يتم الاختيار' && userCountry !== '') {
@@ -865,8 +871,32 @@
           try {
             console.log("ProductDisplayGrid: Attempting to get documents with query...");
             const querySnapshot = await window.firebaseFirestore.getDocs(productsQuery);
-            let fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log("ProductDisplayGrid: Fetched", fetchedProducts.length, "products before client-side filters/sorting.");
+            let fetchedProducts = [];
+            const now = new Date(); // Current time on the client side
+
+            querySnapshot.docs.forEach(doc => {
+                const productData = { id: doc.id, ...doc.data() };
+                console.log("ProductDisplayGrid: Fetched product:", productData.name, "isDaily:", productData.isDaily, "expiresAt:", productData.expiresAt ? productData.expiresAt.toDate() : 'N/A', "category:", productData.category);
+
+                // If it's a daily deal, perform client-side expiration check
+                if (categoryCode === "dailyDeals" && productData.isDaily) {
+                    const expiresAtDate = productData.expiresAt ? productData.expiresAt.toDate() : null;
+                    if (expiresAtDate && expiresAtDate > now) {
+                        fetchedProducts.push(productData);
+                    } else {
+                        console.log("ProductDisplayGrid: Skipping expired daily deal (client-side filter):", productData.name);
+                        // Optionally, you could trigger a cleanup here, but the bot handles it.
+                        // This ensures consistency even if cleanup hasn't run yet.
+                    }
+                } else if (categoryCode !== "dailyDeals") {
+                    // For regular categories, add all fetched products
+                    fetchedProducts.push(productData);
+                }
+            });
+
+            console.log("ProductDisplayGrid: Fetched", querySnapshot.docs.length, "documents from Firestore.");
+            console.log("ProductDisplayGrid: Processed", fetchedProducts.length, "products after client-side daily deal filtering (if applicable).");
+
 
             // Client-side search filter
             if (searchTerm) {
@@ -894,6 +924,7 @@
             if (sortedProducts.length === 0) {
                  setError('لا توجد منتجات حاليًا في هذا القسم أو لهذه الدولة!');
             }
+            console.log("ProductDisplayGrid: Final products array for rendering:", sortedProducts.length, "items.");
           } catch (err) {
             console.error('ProductDisplayGrid: Error fetching products from Firestore:', err);
             setError('تعذر تحميل المنتجات حاليًا. يرجى المحاولة مرة أخرى لاحقًا.');
@@ -1314,4 +1345,3 @@
   </script>
 </body>
 </html>
-
